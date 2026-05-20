@@ -10,8 +10,8 @@ export default function UploadPage() {
     <div className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-background text-foreground">
       <PageWrapper maxWidth="full" dense className="h-full overflow-hidden pb-14">
         <header className="flex shrink-0 flex-wrap items-end gap-x-3 gap-y-1 border-b border-border pb-2">
-          <h1 className="text-base font-bold tracking-tight text-foreground sm:text-lg">Assessment</h1>
-          <p className="hidden min-w-0 flex-1 text-[11px] leading-snug text-muted-foreground md:block md:truncate">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">Assessment</h1>
+          <p className="hidden min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:block md:truncate lg:text-sm">
             Upload operational records and complete the governance questionnaire.
           </p>
         </header>

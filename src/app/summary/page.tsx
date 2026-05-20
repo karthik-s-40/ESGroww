@@ -1,6 +1,8 @@
 import { getSummaryData } from "@/actions/summary.actions";
 import { GoToResultsButton } from "@/components/shared/GoToResultsButton";
 
+export const dynamic = "force-dynamic";
+
 type DriverType =
   | "positive"
   | "negative";
@@ -176,11 +178,11 @@ export default async function SummaryPage() {
 
             <div>
 
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
                 ESG Intelligence Center
               </h1>
 
-              <p className="mt-2 text-sm text-emerald-50 max-w-2xl">
+              <p className="mt-2 text-xs md:text-sm text-emerald-50 max-w-2xl">
                 Real-time sustainability
                 readiness, operational
                 analytics, carbon intelligence,

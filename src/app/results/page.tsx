@@ -236,41 +236,34 @@ export default function ResultsPage() {
   };
 
   return (
-    <div style={{
-      fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-      background: "linear-gradient(180deg, #f8fafc 0%, #ecfdf5 100%)",
-      minHeight: "100vh",
-      width: "100%",
-      overflowY: "auto",
-      overflowX: "hidden",
-      display: "flex",
-      flexDirection: "column",
-      padding: "10px 14px 20px",
-      boxSizing: "border-box",
-      opacity: loaded ? 1 : 0,
-      transition: "opacity 0.4s ease",
-    }}>
+    <div
+      className="min-h-screen w-full flex flex-col px-3.5 py-4 box-border transition-opacity duration-500 ease-in-out"
+      style={{
+        background: "linear-gradient(180deg, #f8fafc 0%, #ecfdf5 100%)",
+        opacity: loaded ? 1 : 0,
+      }}
+    >
       <ReportPdfCapture data={data} />
       <div
         id="results-report-capture"
-        style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, width: "100%", maxWidth: "100%" }}
+        className="flex flex-col flex-1 min-h-0 w-full max-w-full"
       >
       {/* ── Header ── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+      <div className="flex shrink-0 flex-wrap items-end justify-between gap-x-3 gap-y-2 border-b border-border pb-2 mb-3">
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 7, height: 28, background: color, borderRadius: 4 }} />
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-7 rounded-sm" style={{ background: color }} />
             <div>
-              <h1 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.3px" }}>
+              <h1 className="m-0 text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
                 ESG Intelligence Dashboard
               </h1>
-              <p style={{ margin: 0, fontSize: 10, color: "#94a3b8", marginTop: 1 }}>
+              <p className="m-0 text-xs text-muted-foreground mt-0.5">
                 {data.orgName ?? "Organization"} · {data.sector ?? "Healthcare"} · Assessment Reference
               </p>
             </div>
           </div>
         </div>
-        <div data-html2canvas-ignore="true" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div data-html2canvas-ignore="true" className="flex gap-2 items-center">
           <DownloadReportButton
             data={data}
             captureRootId="pdf-report-capture"
@@ -289,13 +282,13 @@ export default function ResultsPage() {
       </div>
  
       {consultationOpen && (
-        <div style={{ marginBottom: 8, borderRadius: 14, background: "#ffffff", border: "1px solid #e2e8f0", padding: 16, boxShadow: "0 8px 30px rgba(15, 23, 42, 0.08)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+        <div className="mb-3 rounded-2xl bg-card border border-border p-4 shadow-md">
+          <div className="flex justify-between items-start gap-3 mb-3.5">
             <div>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              <p className="m-0 text-xs font-bold text-emerald-500 uppercase tracking-wider">
                 Consultation Request
               </p>
-              <h2 style={{ margin: "8px 0 0", fontSize: 18, fontWeight: 800, color: "#0f172a" }}>
+              <h2 className="m-0 mt-2 text-lg font-bold text-slate-900">
                 Book your ESG consultation with SAM Corporate
               </h2>
             </div>
@@ -303,26 +296,26 @@ export default function ResultsPage() {
               Close
             </Button>
           </div>
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: "#475569" }}>
+          <p className="m-0 text-sm leading-relaxed text-muted-foreground">
             Get a personalized review of your ESG assessment, customized action plans, and expert guidance to accelerate sustainability readiness. Share your details and we will connect you with our specialist team.
           </p>
-          <div style={{ display: "grid", gap: 8, marginTop: 16, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
-            <div style={{ padding: 14, borderRadius: 14, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>Email</p>
-              <p style={{ margin: "8px 0 0", fontSize: 14, color: "#475569" }}><Mail className="inline-block" style={{ marginRight: 8, verticalAlign: "middle" }} /> hello@samcorporate.com</p>
+          <div className="grid gap-3 mt-4 grid-cols-1 md:grid-cols-3">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-border">
+              <p className="m-0 text-xs font-bold text-slate-900">Email</p>
+              <p className="m-0 mt-2 text-sm text-muted-foreground"><Mail className="inline-block" style={{ marginRight: 8, verticalAlign: "middle" }} /> hello@samcorporate.com</p>
             </div>
-            <div style={{ padding: 14, borderRadius: 14, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>Phone</p>
-              <p style={{ margin: "8px 0 0", fontSize: 14, color: "#475569" }}><Phone className="inline-block" style={{ marginRight: 8, verticalAlign: "middle" }} /> +91 22 1234 5678</p>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-border">
+              <p className="m-0 text-xs font-bold text-slate-900">Phone</p>
+              <p className="m-0 mt-2 text-sm text-muted-foreground"><Phone className="inline-block" style={{ marginRight: 8, verticalAlign: "middle" }} /> +91 22 1234 5678</p>
             </div>
-            <div style={{ padding: 14, borderRadius: 14, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>Connect</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-                <a href="https://www.linkedin.com/company/sam-corporate/posts/?feedView=all" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 10px", borderRadius: 10, background: "#eef2ff", color: "#4338ca", textDecoration: "none", fontSize: 13 }}><Link2 size={16} /> LinkedIn</a>
-                <a href="https://www.facebook.com/samcorporate/" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 10px", borderRadius: 10, background: "#f8fafc", color: "#1f2937", textDecoration: "none", fontSize: 13 }}><Link2 size={16} /> Facebook</a>
-                <a href="https://x.com/SamCorporate" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 10px", borderRadius: 10, background: "#f8fafc", color: "#0f172a", textDecoration: "none", fontSize: 13 }}><Link2 size={16} /> X</a>
-                <a href="https://www.instagram.com/samcorporate/" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 10px", borderRadius: 10, background: "#fff7ed", color: "#c2410c", textDecoration: "none", fontSize: 13 }}><Link2 size={16} /> Instagram</a>
-                <a href="https://www.youtube.com/channel/UCPSzEWs8GN8RIG5lzHbjCAg" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 10px", borderRadius: 10, background: "#f8fafc", color: "#dc2626", textDecoration: "none", fontSize: 13 }}><Link2 size={16} /> YouTube</a>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-border">
+              <p className="m-0 text-xs font-bold text-slate-900">Connect</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <a href="https://www.linkedin.com/company/sam-corporate/posts/?feedView=all" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold no-underline"><Link2 size={16} /> LinkedIn</a>
+                <a href="https://www.facebook.com/samcorporate/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-slate-50 text-slate-800 hover:bg-slate-100 text-xs font-semibold no-underline"><Link2 size={16} /> Facebook</a>
+                <a href="https://x.com/SamCorporate" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-slate-50 text-slate-900 hover:bg-slate-100 text-xs font-semibold no-underline"><Link2 size={16} /> X</a>
+                <a href="https://www.instagram.com/samcorporate/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 text-xs font-semibold no-underline"><Link2 size={16} /> Instagram</a>
+                <a href="https://www.youtube.com/channel/UCPSzEWs8GN8RIG5lzHbjCAg" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-slate-50 text-red-600 hover:bg-red-50 text-xs font-semibold no-underline"><Link2 size={16} /> YouTube</a>
               </div>
             </div>
           </div>
@@ -333,96 +326,96 @@ export default function ResultsPage() {
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "minmax(220px, 240px) minmax(140px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr)", gridAutoRows: "minmax(220px, auto)", gridTemplateRows: "minmax(240px, auto) minmax(240px, auto) auto", gap: 14, minHeight: 0 }}>
  
         {/* ── Col 1: Overall Hero (spans 2 rows) ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, gridRow: "1 / 3", borderRadius: 16, padding: "18px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ textAlign: "center", width: "100%" }}>
-            <p style={{ margin: 0, fontSize: 9, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1 }}>Overall Readiness</p>
-            <div style={{ margin: "6px auto 0" }}>
+        <div className={`${glassCardClass} flex flex-col items-center justify-between rounded-2xl p-4.5`} style={{ ...glassCardStyle, gridRow: "1 / 3" }}>
+          <div className="text-center w-full">
+            <p className="m-0 text-xs font-bold text-muted-foreground uppercase tracking-wider">Overall Readiness</p>
+            <div className="my-1.5 mx-auto w-fit">
               <Gauge value={score} size={120} />
             </div>
-            <div style={{ marginTop: 4, fontSize: 11, fontWeight: 800, color }}>
+            <div className="mt-1 text-sm font-bold" style={{ color }}>
               {stageLabel(score)}
             </div>
-            <div style={{ fontSize: 9, color: "#94a3b8", marginTop: 2 }}>{data.readinessStage}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{data.readinessStage}</div>
           </div>
  
-          <div style={{ width: "100%", marginTop: 8 }}>
+          <div className="w-full mt-2 flex justify-center">
             <Radar scores={radarData} />
           </div>
  
-          <div style={{ width: "100%", marginTop: 4 }}>
+          <div className="w-full mt-2">
             {[
               { label: "Completeness", val: Math.round(data.completeness), col: "#3b82f6" },
               { label: "Confidence", val: Math.round(data.confidence * 100), col: "#8b5cf6" },
             ].map(m => (
-              <div key={m.label} style={{ marginBottom: 7 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#64748b", marginBottom: 2 }}>
-                  <span>{m.label}</span><span style={{ fontWeight: 700 }}>{m.val}%</span>
+              <div key={m.label} className="mb-2">
+                <div className="flex justify-between text-xs text-slate-500 mb-0.5">
+                  <span>{m.label}</span><span className="font-bold">{m.val}%</span>
                 </div>
                 <Bar value={m.val} color={m.col} />
               </div>
             ))}
-            <div style={{ background: "#f8fafc", borderRadius: 8, padding: "7px 8px", marginTop: 6, border: "1px solid #e2e8f0" }}>
-              <p style={{ margin: 0, fontSize: 8, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8 }}>Total Emissions</p>
-              <p style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#0f172a" }}>{data.totalEmissions.toFixed(1)}</p>
-              <p style={{ margin: 0, fontSize: 8, color: "#94a3b8" }}>tCO₂e / year</p>
+            <div className="bg-slate-50 rounded-xl p-2.5 mt-2.5 border border-border">
+              <p className="m-0 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Total Emissions</p>
+              <p className="m-0 mt-0.5 text-lg font-black text-slate-900">{data.totalEmissions.toFixed(1)}</p>
+              <p className="m-0 text-[10px] text-muted-foreground font-medium">tCO₂e / year</p>
             </div>
           </div>
         </div>
  
         {/* ── Row 1 Col 2: Certification Readiness ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, borderRadius: 16, padding: "14px 16px", overflow: "visible", display: "flex", flexDirection: "column" }}>
-          <p style={{ margin: "0 0 10px", fontSize: 10, fontWeight: 700, color: "#0f172a", textTransform: "uppercase", letterSpacing: 0.8 }}>Certification Readiness</p>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5, overflow: "visible" }}>
+        <div className={`${glassCardClass} rounded-2xl p-4.5 overflow-visible flex flex-col`} style={glassCardStyle}>
+          <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Certification Readiness</p>
+          <div className="flex-1 flex flex-col gap-2 overflow-visible">
             {certEntries.map((cert) => {
               const s = cert.score;
               const c = stageColor(s);
               return (
-                <div key={cert.name} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ flex: "0 0 90px", fontSize: 10, fontWeight: 600, color: "#334155", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{formatCertName(cert.name)}</div>
-                  <div style={{ flex: 1 }}><Bar value={s} color={c} /></div>
-                  <div style={{ flex: "0 0 24px", fontSize: 10, fontWeight: 700, color: c, textAlign: "right" }}>{s}</div>
-                  <div style={{ flex: "0 0 68px", background: `${c}18`, color: c, fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "2px 5px", textAlign: "center" }}>{cert.status}</div>
+                <div key={cert.name} className="flex items-center gap-2">
+                  <div className="flex-[0_0_90px] text-xs font-semibold text-slate-700 truncate">{formatCertName(cert.name)}</div>
+                  <div className="flex-1"><Bar value={s} color={c} /></div>
+                  <div className="flex-[0_0_24px] text-xs font-bold text-right" style={{ color: c }}>{s}</div>
+                  <div className="flex-[0_0_68px] text-[10px] font-bold rounded-md py-0.5 px-1.5 text-center" style={{ background: `${c}18`, color: c }}>{cert.status}</div>
                 </div>
               );
             })}
           </div>
-          <p style={{ margin: "8px 0 0", fontSize: 8, color: "#cbd5e1", fontStyle: "italic" }}>
+          <p className="m-0 mt-3 text-[10px] text-muted-foreground italic">
             SAM Assessment provides indicative readiness scores only — not a certification guarantee.
           </p>
         </div>
  
         {/* ── Row 1 Col 3: Category Scores + Emissions ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, borderRadius: 16, padding: "14px 16px", display: "flex", flexDirection: "column" }}>
-          <p style={{ margin: "0 0 10px", fontSize: 10, fontWeight: 700, color: "#0f172a", textTransform: "uppercase", letterSpacing: 0.8 }}>Category Performance</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, flex: 1 }}>
+        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col`} style={glassCardStyle}>
+          <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Category Performance</p>
+          <div className="grid grid-cols-2 gap-2 flex-1">
             {[
               { label: "Energy", val: catScores.energy, color: "#f59e0b", icon: "⚡" },
               { label: "Water", val: catScores.water, color: "#3b82f6", icon: "💧" },
               { label: "Waste", val: catScores.waste, color: "#22c55e", icon: "♻️" },
               { label: "Governance", val: catScores.governance, color: "#8b5cf6", icon: "🏛" },
             ].map(c => (
-              <div key={c.label} style={{ background: "#f8fafc", borderRadius: 8, padding: "8px 10px", border: "1px solid #f1f5f9" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 9, color: "#64748b", fontWeight: 600 }}>{c.icon} {c.label}</span>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: stageColor(c.val) }}>{Math.round(c.val)}</span>
+              <div key={c.label} className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 flex flex-col justify-between">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] text-slate-500 font-bold">{c.icon} {c.label}</span>
+                  <span className="text-sm font-black" style={{ color: stageColor(c.val) }}>{Math.round(c.val)}</span>
                 </div>
                 <Bar value={c.val} color={c.color} />
               </div>
             ))}
           </div>
  
-          <div style={{ marginTop: 8, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
-            <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Emissions Breakdown</p>
-            <div style={{ display: "flex", gap: 6 }}>
+          <div className="mt-2.5 border-t border-slate-100 pt-2.5">
+            <p className="m-0 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Emissions Breakdown</p>
+            <div className="flex gap-2">
               {[
                 { label: "Scope 1", val: emis.scope1, color: "#dc2626" },
                 { label: "Scope 2", val: emis.scope2, color: "#ea580c" },
                 { label: "Scope 3", val: emis.scope3, color: "#ca8a04" },
               ].map(s => (
-                <div key={s.label} style={{ flex: 1, background: `${s.color}10`, borderRadius: 8, padding: "6px 8px", border: `1px solid ${s.color}30`, textAlign: "center" }}>
-                  <p style={{ margin: 0, fontSize: 8, color: s.color, fontWeight: 700 }}>{s.label}</p>
-                  <p style={{ margin: "2px 0 0", fontSize: 13, fontWeight: 800, color: s.color }}>{s.val.toFixed(1)}</p>
-                  <p style={{ margin: 0, fontSize: 7, color: "#94a3b8" }}>tCO₂e</p>
+                <div key={s.label} className="flex-1 rounded-xl p-2 text-center border" style={{ background: `${s.color}10`, borderColor: `${s.color}30` }}>
+                  <p className="m-0 text-[10px] font-bold" style={{ color: s.color }}>{s.label}</p>
+                  <p className="m-0 mt-0.5 text-base font-black" style={{ color: s.color }}>{s.val.toFixed(1)}</p>
+                  <p className="m-0 text-[9px] text-muted-foreground">tCO₂e</p>
                 </div>
               ))}
             </div>
@@ -430,49 +423,49 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 1 Col 4: Annualized KPIs ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, borderRadius: 16, padding: "14px 16px", display: "flex", flexDirection: "column" }}>
-          <p style={{ margin: "0 0 10px", fontSize: 10, fontWeight: 700, color: "#0f172a", textTransform: "uppercase", letterSpacing: 0.8 }}>Annualized Metrics</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, flex: 1 }}>
+        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col`} style={glassCardStyle}>
+          <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Annualized Metrics</p>
+          <div className="grid grid-cols-2 gap-2 flex-1">
             {[
               { label: "Electricity", val: Math.round(data.annualizedValues.electricity).toLocaleString(), unit: "kWh", icon: "⚡", color: "#f59e0b" },
               { label: "Water", val: Math.round(data.annualizedValues.water).toLocaleString(), unit: "KL", icon: "💧", color: "#3b82f6" },
               { label: "Fuel / DG", val: Math.round(data.annualizedValues.fuel).toLocaleString(), unit: "Litres", icon: "🛢", color: "#ef4444" },
               { label: "Waste", val: Math.round(data.annualizedValues.waste).toLocaleString(), unit: "kg", icon: "♻️", color: "#22c55e" },
             ].map(m => (
-              <div key={m.label} style={{ background: `${m.color}0a`, borderRadius: 8, padding: "8px 10px", border: `1px solid ${m.color}25` }}>
-                <p style={{ margin: 0, fontSize: 9, color: "#94a3b8", fontWeight: 600 }}>{m.icon} {m.label}</p>
-                <p style={{ margin: "3px 0 0", fontSize: 15, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{m.val}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 8, color: m.color, fontWeight: 600 }}>Est. annual {m.unit}</p>
+              <div key={m.label} className="rounded-xl p-2.5 flex flex-col justify-between border" style={{ background: `${m.color}0a`, borderColor: `${m.color}25` }}>
+                <p className="m-0 text-[10px] text-muted-foreground font-bold">{m.icon} {m.label}</p>
+                <p className="m-0 mt-1 text-base font-black text-slate-900 leading-none">{m.val}</p>
+                <p className="m-0 mt-1 text-[9px] font-bold" style={{ color: m.color }}>Est. annual {m.unit}</p>
               </div>
             ))}
           </div>
-          <div style={{ marginTop: 8, background: "#fef9ec", border: "1px solid #fde68a", borderRadius: 8, padding: "6px 10px" }}>
-            <p style={{ margin: 0, fontSize: 8, color: "#92400e", fontWeight: 600 }}>ℹ Annualized values estimated from {Math.round(data.completeness / 8.33)} months of uploaded data. Confidence modifier applied.</p>
+          <div className="mt-2.5 bg-amber-50/50 border border-amber-200 rounded-xl p-2.5">
+            <p className="m-0 text-[9px] text-amber-800 font-semibold">ℹ Annualized values estimated from {Math.round(data.completeness / 8.33)} months of uploaded data. Confidence modifier applied.</p>
           </div>
         </div>
  
         {/* ── Row 2 Col 2: Strengths + Gaps ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, borderRadius: 16, padding: "14px 16px", display: "flex", flexDirection: "column", overflow: "visible" }}>
-          <div style={{ display: "flex", gap: 12, flex: 1, minHeight: 0 }}>
+        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col overflow-visible`} style={glassCardStyle}>
+          <div className="flex gap-3 flex-1 min-h-0">
             {/* Strengths */}
-            <div style={{ flex: 1, overflow: "visible", display: "flex", flexDirection: "column" }}>
-              <p style={{ margin: "0 0 7px", fontSize: 10, fontWeight: 700, color: "#16a34a", textTransform: "uppercase", letterSpacing: 0.8 }}>✓ Strengths</p>
-              <div style={{ flex: 1, overflow: "visible", display: "flex", flexDirection: "column", gap: 4 }}>
+            <div className="flex-1 overflow-visible flex flex-col">
+              <p className="m-0 mb-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">✓ Strengths</p>
+              <div className="flex-1 overflow-visible flex flex-col gap-1.5">
                 {(data.strengths ?? []).slice(0, 4).map((s, i) => (
-                  <div key={i} style={{ background: "#f0fdf4", borderRadius: 6, padding: "5px 8px", border: "1px solid #bbf7d0" }}>
-                    <p style={{ margin: 0, fontSize: 9, color: "#166534", lineHeight: 1.3 }}>{s}</p>
+                  <div key={i} className="bg-emerald-50/50 rounded-lg p-2 border border-emerald-150">
+                    <p className="m-0 text-xs text-emerald-900 leading-normal">{s}</p>
                   </div>
                 ))}
               </div>
             </div>
             {/* Gaps */}
-            <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              <p style={{ margin: "0 0 7px", fontSize: 10, fontWeight: 700, color: "#dc2626", textTransform: "uppercase", letterSpacing: 0.8 }}>⚠ Critical Gaps</p>
-              <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", gap: 4 }}>
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <p className="m-0 mb-2 text-xs font-bold text-red-600 uppercase tracking-wider">⚠ Critical Gaps</p>
+              <div className="flex-1 overflow-hidden flex flex-col gap-1.5">
                 {(data.gaps ?? []).slice(0, 4).map((g, i) => (
-                  <div key={i} style={{ background: `${sevColor[g.severity]}0a`, borderRadius: 6, padding: "5px 8px", border: `1px solid ${sevColor[g.severity]}30`, display: "flex", gap: 6, alignItems: "flex-start" }}>
-                    <span style={{ background: sevColor[g.severity], color: "#fff", fontSize: 7, fontWeight: 700, borderRadius: 3, padding: "1px 4px", flexShrink: 0, marginTop: 1 }}>{g.severity}</span>
-                    <p style={{ margin: 0, fontSize: 9, color: "#334155", lineHeight: 1.3 }}>{g.text}</p>
+                  <div key={i} className="rounded-lg p-2 border flex gap-1.5 items-start" style={{ background: `${sevColor[g.severity]}0a`, borderColor: `${sevColor[g.severity]}30` }}>
+                    <span className="text-[9px] font-bold text-white rounded px-1.5 py-0.5 shrink-0 mt-0.5" style={{ background: sevColor[g.severity] }}>{g.severity}</span>
+                    <p className="m-0 text-xs text-slate-700 leading-normal">{g.text}</p>
                   </div>
                 ))}
               </div>
@@ -481,32 +474,32 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 3: Regulatory Readiness ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, borderRadius: 16, padding: "14px 16px", display: "flex", flexDirection: "column", overflow: "visible" }}>
-          <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: "#0f172a", textTransform: "uppercase", letterSpacing: 0.8 }}>Regulatory Readiness</p>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col overflow-visible`} style={glassCardStyle}>
+          <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Regulatory Readiness</p>
+          <div className="flex-1 flex flex-col gap-2">
             {(data.regulatoryReadiness ?? []).map((reg, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ flex: "0 0 120px", fontSize: 10, fontWeight: 600, color: "#334155", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{reg.regulation}</div>
-                <div style={{ flex: 1 }}><Bar value={reg.readiness} color={riskColor[reg.risk]} /></div>
-                <div style={{ flex: "0 0 24px", fontSize: 10, fontWeight: 700, color: "#0f172a", textAlign: "right" }}>{reg.readiness}</div>
-                <div style={{ flex: "0 0 72px", background: `${riskColor[reg.risk]}15`, color: riskColor[reg.risk], fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "2px 5px", textAlign: "center" }}>
+              <div key={i} className="flex items-center gap-2">
+                <div className="flex-[0_0_120px] text-xs font-semibold text-slate-700 truncate">{reg.regulation}</div>
+                <div className="flex-1"><Bar value={reg.readiness} color={riskColor[reg.risk]} /></div>
+                <div className="flex-[0_0_24px] text-xs font-bold text-slate-955 text-right">{reg.readiness}</div>
+                <div className="flex-[0_0_72px] text-[10px] font-bold rounded-md py-0.5 px-1.5 text-center" style={{ background: `${riskColor[reg.risk]}15`, color: riskColor[reg.risk] }}>
                   {reg.risk} Risk
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ marginTop: 8, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
-            <p style={{ margin: 0, fontSize: 9, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 4 }}>Certification Pathway</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+          <div className="mt-2.5 border-t border-slate-100 pt-2.5">
+            <p className="m-0 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Certification Pathway</p>
+            <div className="flex items-center gap-1.5 flex-wrap">
               {certEntries
                 .sort((a, b) => b.score - a.score)
                 .slice(0, 4)
                 .map((cert, idx) => (
-                  <div key={cert.name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <div style={{ background: `${stageColor(cert.score)}15`, border: `1px solid ${stageColor(cert.score)}40`, borderRadius: 6, padding: "3px 7px", fontSize: 9, fontWeight: 700, color: stageColor(cert.score) }}>
+                  <div key={cert.name} className="flex items-center gap-1">
+                    <div className="rounded-lg px-2.5 py-1 text-xs font-bold" style={{ background: `${stageColor(cert.score)}15`, border: `1px solid ${stageColor(cert.score)}40`, color: stageColor(cert.score) }}>
                       {idx + 1}. {formatCertName(cert.name)}
                     </div>
-                    {idx < 3 && <span style={{ color: "#cbd5e1", fontSize: 10 }}>→</span>}
+                    {idx < 3 && <span className="text-slate-300 text-xs">→</span>}
                   </div>
                 ))}
             </div>
@@ -514,46 +507,46 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 4: Priority Action Roadmap ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, borderRadius: 16, padding: "14px 16px", display: "flex", flexDirection: "column", overflow: "visible" }}>
-          <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: "#0f172a", textTransform: "uppercase", letterSpacing: 0.8 }}>Priority Action Roadmap</p>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5, overflow: "visible" }}>
+        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col overflow-visible`} style={glassCardStyle}>
+          <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Priority Action Roadmap</p>
+          <div className="flex-1 flex flex-col gap-2 overflow-visible">
             {(data.roadmap ?? []).slice(0, 5).map((r, i) => {
               const tlColors: Record<string, string> = {
                 "Immediate": "#dc2626", "0–3 Months": "#ea580c", "3–6 Months": "#ca8a04", "6–12 Months": "#2563eb", "12+ Months": "#7c3aed",
               };
               const c = tlColors[r.timeline] ?? "#64748b";
               return (
-                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                  <div style={{ flex: "0 0 68px", background: `${c}12`, color: c, fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "3px 5px", textAlign: "center", border: `1px solid ${c}30` }}>
+                <div key={i} className="flex gap-2 items-start">
+                  <div className="flex-[0_0_68px] text-[9px] font-bold rounded border py-1.5 px-1 text-center" style={{ background: `${c}12`, color: c, borderColor: `${c}30` }}>
                     {r.timeline}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: "#0f172a", lineHeight: 1.3 }}>{r.action}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: 8, color: "#94a3b8" }}>{r.impact}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="m-0 text-xs font-semibold text-slate-900 leading-snug">{r.action}</p>
+                    <p className="m-0 mt-0.5 text-[10px] text-muted-foreground">{r.impact}</p>
                   </div>
                 </div>
               );
             })}
           </div>
-          <div style={{ marginTop: 8, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "7px 10px" }}>
-            <p style={{ margin: 0, fontSize: 8, color: "#1e40af", fontWeight: 600, lineHeight: 1.4 }}>
-              <strong>Executive Summary:</strong> {data.orgName} demonstrates {score >= 75 ? "strong" : score >= 60 ? "moderate" : "foundational"} sustainability fundamentals. Strong potential for {certEntries.filter((c) => c.score >= 60).map((c) => c.name).slice(0, 2).join(", ")}. Priority: renewable energy integration and governance formalization.
+          <div className="mt-2.5 bg-blue-50/50 border border-blue-200 rounded-xl p-2.5">
+            <p className="m-0 text-[10px] text-blue-900 font-semibold leading-relaxed">
+              <strong className="font-bold text-blue-900">Executive Summary:</strong> {data.orgName} demonstrates {score >= 75 ? "strong" : score >= 60 ? "moderate" : "foundational"} sustainability fundamentals. Strong potential for {certEntries.filter((c) => c.score >= 60).map((c) => c.name).slice(0, 2).join(", ")}. Priority: renewable energy integration and governance formalization.
             </p>
           </div>
         </div>
  
         {/* ── Row 3: KPI Dashboard (full width) ── */}
-        <div className={glassCardClass} style={{ ...glassCardStyle, gridColumn: "1 / -1", borderRadius: 20, border: "1px solid rgba(255,255,255,0.45)", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className={`${glassCardClass} rounded-3xl p-5 md:p-6 flex flex-col gap-4.5`} style={{ ...glassCardStyle, gridColumn: "1 / -1" }}>
+          <div className="flex items-center justify-between">
             <div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#0f172a", textTransform: "uppercase", letterSpacing: 0.8 }}>KPI Scorecards</p>
-              <p style={{ margin: "2px 0 0", fontSize: 11, color: "#64748b" }}>Benchmarked against healthcare industry standards</p>
+              <p className="m-0 text-sm font-extrabold text-slate-900 uppercase tracking-wider">KPI Scorecards</p>
+              <p className="m-0 mt-0.5 text-xs text-muted-foreground">Benchmarked against healthcare industry standards</p>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#3b82f6", background: "#eff6ff", padding: "5px 12px", borderRadius: 6 }}>
+            <div className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
               {kpiItems.length} Metrics Analyzed
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
             {kpiItems.map((item) => {
               const kpi = item.kpi;
               const isInsufficient = kpi.status === "Insufficient Data";
@@ -563,25 +556,23 @@ export default function ResultsPage() {
               const statusBorder = isInsufficient ? "#e2e8f0" : kpi.scoreImpact === "Full" ? "#a7f3d0" : kpi.scoreImpact === "Partial" ? "#fde68a" : "#fecaca";
               
               return (
-                <div key={item.title} className="group hover:-translate-y-1 hover:shadow-md transition-all duration-300" style={{ background: statusBg, border: `1px solid ${statusBorder}`, borderRadius: 12, padding: "14px", display: "flex", flexDirection: "column", gap: 6, position: "relative", overflow: "hidden", cursor: "default" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4, zIndex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 14 }}>{item.icon}</span>
-                      <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#334155", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</p>
+                <div key={item.title} className="group hover:-translate-y-1 hover:shadow-md transition-all duration-300 border rounded-2xl p-3.5 flex flex-col gap-1.5 relative overflow-hidden cursor-default" style={{ background: statusBg, borderColor: statusBorder }}>
+                  <div className="flex items-center justify-between gap-1 z-10">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm shrink-0">{item.icon}</span>
+                      <p className="m-0 text-[10px] font-bold text-slate-700 truncate">{item.title}</p>
                     </div>
-                    <span style={{ background: scoreImpactColor, color: "#fff", fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "2px 6px", flexShrink: 0 }}>{scoreImpactLabel}</span>
+                    <span className="text-[9px] font-bold text-white rounded-md px-1.5 py-0.5 shrink-0" style={{ background: scoreImpactColor }}>{scoreImpactLabel}</span>
                   </div>
                   
-                  <div style={{ zIndex: 1, marginTop: 4 }}>
-                    <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>
+                  <div className="z-10 mt-1 flex-1">
+                    <p className="m-0 text-lg font-black text-slate-900 leading-none">
                       {kpi.value !== null ? `${kpi.value.toFixed(1)}` : "N/A"}
-                      {kpi.value !== null && <span style={{ fontSize: 10, fontWeight: 600, color: "#64748b", marginLeft: 3 }}>{item.unit}</span>}
+                      {kpi.value !== null && <span className="text-[9px] font-bold text-muted-foreground ml-0.5">{item.unit}</span>}
                     </p>
-                    <p style={{ margin: "4px 0 0", fontSize: 9, color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{kpi.status}</p>
-                  </div>
-                  
-                  <div style={{ height: 4, background: "#e2e8f0", borderRadius: 2, overflow: "hidden", marginTop: "auto", zIndex: 1 }}>
-                    <div style={{ height: "100%", background: scoreImpactColor, borderRadius: 2, width: isInsufficient ? "0%" : kpi.scoreImpact === "Full" ? "100%" : kpi.scoreImpact === "Partial" ? "50%" : "15%", transition: "width 1s ease-out" }} />
+                    <p className="m-0 mt-1 text-[8px] text-muted-foreground truncate">
+                      {kpi.status}
+                    </p>
                   </div>
 
                   {/* Decorative background circle */}

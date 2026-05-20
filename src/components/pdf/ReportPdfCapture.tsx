@@ -99,10 +99,10 @@ function Gauge({ value, size = 108 }: { value: number; size?: number }) {
         strokeDasharray={circumference}
         strokeDashoffset={offset}
       />
-      <text x="60" y="52" textAnchor="middle" fontSize="22" fontWeight="800" fill={BRAND.ink} fontFamily="Georgia, serif">
+      <text x="60" y="52" textAnchor="middle" fontSize="22" fontWeight="800" fill={BRAND.ink} fontFamily="var(--font-lexend), sans-serif">
         {value}
       </text>
-      <text x="60" y="72" textAnchor="middle" fontSize="10" fill={BRAND.muted} fontFamily="system-ui, sans-serif">
+      <text x="60" y="72" textAnchor="middle" fontSize="10" fill={BRAND.muted} fontFamily="var(--font-lexend), sans-serif">
         Overall
       </text>
     </svg>
@@ -134,7 +134,7 @@ function ReportFooter({
         flexWrap: "wrap",
         fontSize: 9,
         color: BRAND.slate,
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--font-lexend), sans-serif",
         letterSpacing: "0.02em",
       }}
     >
@@ -319,7 +319,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
     <div
       id="pdf-report-capture"
       className="fixed left-[-9999px] top-0"
-      style={{ width: A4_PORTRAIT_CSS_PX.width, pointerEvents: "none", zIndex: -2 }}
+      style={{ width: A4_PORTRAIT_CSS_PX.width, pointerEvents: "none", zIndex: -2, fontFamily: "var(--font-lexend), sans-serif" }}
     >
       {/* —— Page 1: Cover + executive snapshot + readiness —— */}
       <PrintPage>
@@ -329,7 +329,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
             <h1
               style={{
                 margin: 0,
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-lexend), sans-serif",
                 fontSize: 34,
                 fontWeight: 700,
                 color: BRAND.ink,
@@ -398,7 +398,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
               ].map((c) => (
                 <div key={c.label} style={{ textAlign: "center" }}>
                   <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: BRAND.slate }}>{c.label}</p>
-                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 900, color: stageColor(c.value), fontFamily: "Georgia, serif" }}>
+                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 900, color: stageColor(c.value), fontFamily: "var(--font-lexend), sans-serif" }}>
                     {Math.round(c.value)}
                   </p>
                   <div style={{ marginTop: grid8, height: 6, background: "#e2e8f0", borderRadius: 1, overflow: "hidden" }}>
@@ -531,7 +531,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                       <span style={{ fontSize: 8, fontWeight: 800, padding: "2px 6px", borderRadius: 2, background: bg, color: fg }}>{label}</span>
                     </div>
                     <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: BRAND.muted, lineHeight: 1.25 }}>{item.title}</p>
-                    <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: BRAND.ink, fontFamily: "Georgia, serif", lineHeight: 1 }}>
+                    <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: BRAND.ink, fontFamily: "var(--font-lexend), sans-serif", lineHeight: 1 }}>
                       {displayVal}
                       <span style={{ fontSize: 10, fontWeight: 600, color: BRAND.slate, marginLeft: 4 }}>{item.unit}</span>
                     </p>
@@ -703,7 +703,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                 fontSize: 13,
                 lineHeight: 1.65,
                 color: "#064e3b",
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-lexend), sans-serif",
                 fontStyle: "italic",
               }}
             >
