@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken } from "@/lib/session";
+import { jwtVerify } from "jose";
 
 const protectedRoutes = [
   "/esg-readiness-platform",
   "/results",
   "/summary",
+  "/admin/esg-readiness-platform",
 ];
 
-export function middleware(request: NextRequest) {
+const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
+
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r));
@@ -22,13 +25,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=session_expired", request.url));
   }
 
-  const payload = verifySessionToken(token);
-
-  if (!payload) {
+  try {
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    await jwtVerify(token, secret);
+    return NextResponse.next();
+  } catch (err) {
     return NextResponse.redirect(new URL("/login?error=session_expired", request.url));
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
@@ -36,5 +39,6 @@ export const config = {
     "/esg-readiness-platform/:path*",
     "/results/:path*",
     "/summary/:path*",
+    "/admin/esg-readiness-platform/:path*",
   ],
 };

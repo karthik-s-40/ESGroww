@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST() {
   const res = NextResponse.json({ ok: true });
   // clear token cookie
-  res.cookies.set("token", "", {
+  res.cookies.set("session", "", {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
