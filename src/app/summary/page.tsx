@@ -1,5 +1,6 @@
 import { getSummaryData } from "@/actions/summary.actions";
 import { GoToResultsButton } from "@/components/shared/GoToResultsButton";
+import { DownloadSummaryButton } from "@/components/summary/DownloadSummaryButton";
 
 export const dynamic = "force-dynamic";
 
@@ -167,7 +168,7 @@ export default async function SummaryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
+    <div id="summary-report" className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
 
       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
 
@@ -189,8 +190,9 @@ export default async function SummaryPage() {
                 and ESG scoring insights.
               </p>
 
-              <div className="mt-4">
+              <div className="mt-4 flex items-center gap-3" data-html2canvas-ignore="true">
                 <GoToResultsButton />
+                <DownloadSummaryButton targetId="summary-report" />
               </div>
 
             </div>
