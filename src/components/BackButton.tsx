@@ -20,7 +20,7 @@ export default function BackButton() {
   }, []);
 
   // Hide back button on login, register, and upload pages
-  const hiddenPaths = ["/login", "/register", "/upload"];
+  const hiddenPaths = ["/login", "/register", "/esg-readiness-platform"];
   if (!mounted || hiddenPaths.includes(pathname)) return null;
 
   return (

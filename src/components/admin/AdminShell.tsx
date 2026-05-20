@@ -10,7 +10,7 @@ import Image from "next/image";
 
 const TITLE: Record<string, string> = {
   "/admin": "Executive Overview",
-  "/admin/uploads": "Upload Intelligence Center",
+  "/admin/esg-readiness-platform": "Upload Intelligence Center",
   "/admin/calculations": "Sustainability Intelligence Engine",
   "/admin/certifications": "Certification Readiness Control Center",
   "/admin/risk-analysis": "ESG Risk Intelligence Center",

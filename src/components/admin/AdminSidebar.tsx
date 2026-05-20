@@ -27,7 +27,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/admin/uploads", label: "Upload Intelligence", icon: Upload },
+  { href: "/admin/esg-readiness-platform", label: "Upload Intelligence", icon: Upload },
   { href: "/admin/calculations", label: "Calculations Engine", icon: BarChart3 },
   { href: "/admin/certifications", label: "Certifications", icon: Award },
   { href: "/admin/risk-analysis", label: "Risk Analysis", icon: ShieldAlert },

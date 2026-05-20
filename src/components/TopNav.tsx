@@ -14,7 +14,7 @@ export default function TopNav() {
       if (!res.ok) return;
       const data = await res.json();
       if (data?.authenticated) {
-        router.push("/upload");
+        router.push("/esg-readiness-platform");
       }
     } catch (e) {
       // ignore

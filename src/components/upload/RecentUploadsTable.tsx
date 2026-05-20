@@ -304,7 +304,7 @@ export default function RecentUploadsTable({
           )}
           {showViewAllLink && (
             <Link
-              href="/upload/history"
+              href="/esg-readiness-platform/history"
               className={cn(
                 "shrink-0 font-medium text-emerald-700 hover:text-emerald-800",
                 compact ? "text-[10px]" : "text-sm"

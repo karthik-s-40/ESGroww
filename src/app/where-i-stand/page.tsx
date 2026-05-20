@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getWhereIStandData } from "@/actions/whereIStand.action";
 import { updateHospitalProfile } from "@/actions/updateHospitalProfile.actions";
-import { Card as BaseCard } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import BentoGrid from "@/components/shared/BentoGrid";
 
 const BRAND = {
@@ -234,7 +234,7 @@ export default function WhereIStandPage() {
               <div className="flex flex-col gap-3 min-h-0">
 
               {/* Organization */}
-              <Card className="shrink-0">
+              <Card className="shrink-0 p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                 <div className="flex items-start justify-between mb-4">
                   <SectionTitle icon={Building2} title="Organization" />
                   <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ export default function WhereIStandPage() {
               </Card>
 
               {/* Current Status */}
-              <Card className="flex flex-col overflow-y-auto max-h-[36rem]">
+              <Card className="flex flex-col overflow-y-auto max-h-[36rem] p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                 <SectionTitle icon={Activity} title="Current Status" />
                 <div className="mt-4 space-y-2">
                   {data.currentStatus?.length > 0 ? data.currentStatus.map((item: any, idx: number) => {
@@ -301,7 +301,7 @@ export default function WhereIStandPage() {
 
               {/* Readiness + Certifications row */}
               <div className="grid grid-cols-2 gap-3 shrink-0">
-                <Card>
+                <Card className="p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                   <SectionTitle icon={ShieldCheck} title="Readiness" />
                   <div className="mt-4 flex items-center gap-4">
                     <CircularProgress value={Math.round(data.readiness?.overall || 0)} />
@@ -313,7 +313,7 @@ export default function WhereIStandPage() {
                   </div>
                 </Card>
 
-                <Card className="flex flex-col">
+                <Card className="flex flex-col p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                   <SectionTitle icon={FileBarChart2} title="Certifications" />
                   <div className="mt-4 space-y-4">
                     {data.certifications?.map((cert: any) => (
@@ -337,7 +337,7 @@ export default function WhereIStandPage() {
               </div>
 
               {/* Upload Readiness — fills remaining */}
-              <Card className="flex flex-col overflow-y-auto max-h-[36rem]">
+              <Card className="flex flex-col overflow-y-auto max-h-[36rem] p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                 <div className="flex items-center justify-between mb-3 shrink-0">
                   <SectionTitle icon={Upload} title="Upload Readiness" />
                   <StatusPill label="1M Upload · 3M Ann · 6M ESG · 12M Max" color={BRAND.primary} />
@@ -370,7 +370,7 @@ export default function WhereIStandPage() {
               <div className="flex flex-col gap-3 min-h-0">
 
               {/* Roadmap */}
-              <Card className="flex flex-col">
+              <Card className="flex flex-col p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                 <SectionTitle icon={TrendingUp} title="Roadmap" />
                 <div className="mt-2 space-y-2">
                   {data.roadmap?.length > 0 ? data.roadmap.map((action: any, idx: number) => {
@@ -390,7 +390,7 @@ export default function WhereIStandPage() {
               </Card>
 
               {/* Timeline */}
-              <Card className="flex flex-col">
+              <Card className="flex flex-col p-4 rounded-2xl border bg-white shadow-sm" style={{ borderColor: BRAND.border }}>
                 <SectionTitle icon={CalendarDays} title="Upload Timeline" />
                 <div className="mt-2">
                   {data.timeline?.length > 0 ? (
@@ -441,18 +441,7 @@ export default function WhereIStandPage() {
 }
 
 /* ─── SUB-COMPONENTS ─── */
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <BaseCard
-      className={`gap-0 rounded-2xl border p-0 shadow-sm ${className}`}
-      style={{ background: "#ffffff", borderColor: BRAND.border }}
-    >
-      <div className="p-4">
-      {children}
-      </div>
-    </BaseCard>
-  );
-}
+/* ─── SUB-COMPONENTS ─── */
 
 function SectionTitle({ icon: Icon, title }: { icon: any; title: string }) {
   return (
