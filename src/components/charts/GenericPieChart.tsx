@@ -17,7 +17,7 @@ interface GenericPieChartProps {
   valueFormatter?: (value: number) => string;
 }
 
-const CustomPieTooltip = ({ active, payload, valueFormatter }: any) => {
+const CustomPieTooltip = ({ active, payload, valueFormatter }: { active?: boolean; payload?: Array<{ name: string; value: number; fill?: string }>; valueFormatter: (value: number) => string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white rounded-lg border-2 border-blue-200 shadow-lg p-3">

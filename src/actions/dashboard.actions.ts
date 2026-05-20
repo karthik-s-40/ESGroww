@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { AppError, ERROR_MESSAGES } from "@/lib/errors";
+import { getAdminCalculationFactors } from "@/lib/adminConfig";
 
 import {
   calculateScope2Emissions,
@@ -23,25 +25,36 @@ import {
   calculateESGReadinessScore,
 } from "@/lib/esgCalculations";
 
-export async function fetchDashboardIntelligence() {
-  const hospital =
-    await prisma.hospital.findFirst({
-      include: {
-        electricityData: true,
-        waterData: true,
-        fuelData: true,
-        wasteData: true,
-        refrigerantData: true,
-        transportData: true,
-        governanceData: true,
-      },
-    });
+import { cookies } from "next/headers";
+
+export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
+  if (!assessmentCycleId) {
+    const cookieStore = await cookies();
+    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+  }
+  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
+  
+  const hospital = await prisma.hospital.findFirst({
+    select: {
+      hospitalName: true,
+      industry: true,
+      numberOfBeds: true,
+      builtUpArea: true,
+      electricityData: dataCondition ? { ...dataCondition, select: { electricityKwh: true, renewableKwh: true, month: true, year: true } } : { select: { electricityKwh: true, renewableKwh: true, month: true, year: true } },
+      waterData: dataCondition ? { ...dataCondition, select: { waterKl: true, recycledWaterKl: true, month: true, year: true } } : { select: { waterKl: true, recycledWaterKl: true, month: true, year: true } },
+      fuelData: dataCondition ? { ...dataCondition, select: { dgDieselLitres: true, month: true, year: true } } : { select: { dgDieselLitres: true, month: true, year: true } },
+      wasteData: dataCondition ? { ...dataCondition, select: { biomedicalWasteKg: true, recyclableWasteKg: true, landfillWasteKg: true, month: true, year: true } } : { select: { biomedicalWasteKg: true, recyclableWasteKg: true, landfillWasteKg: true, month: true, year: true } },
+      refrigerantData: dataCondition ? { ...dataCondition, select: { refrigerantType: true, refrigerantLeakKg: true, month: true, year: true } } : { select: { refrigerantType: true, refrigerantLeakKg: true, month: true, year: true } },
+      transportData: dataCondition ? { ...dataCondition, select: { ambulanceFuelLitres: true, month: true, year: true } } : { select: { ambulanceFuelLitres: true, month: true, year: true } },
+      governanceData: { select: { hasEsgPolicy: true, hasAuditReports: true } },
+    },
+  });
 
   if (!hospital) {
-    throw new Error(
-      "No hospital found."
-    );
+    throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
   }
+
+  const { factors } = await getAdminCalculationFactors();
 
   /* =============================== */
   /* MINIMUM DATA REQUIREMENT        */
@@ -180,17 +193,20 @@ export async function fetchDashboardIntelligence() {
 
   const scope2Emissions =
     calculateScope2Emissions(
-      electricityKwh
+      electricityKwh,
+      factors
     );
 
   const dieselEmissions =
     calculateDieselEmissions(
-      dgDieselLitres
+      dgDieselLitres,
+      factors
     );
 
   const transportEmissions =
     calculateTransportEmissions(
-      ambulanceFuelLitres
+      ambulanceFuelLitres,
+      factors
     );
 
   let refrigerantEmissions = 0;
@@ -199,7 +215,8 @@ export async function fetchDashboardIntelligence() {
     refrigerantEmissions +=
       calculateRefrigerantEmissions(
         row.refrigerantType,
-        row.refrigerantLeakKg
+        row.refrigerantLeakKg,
+        factors
       );
   }
 

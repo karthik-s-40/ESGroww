@@ -8,199 +8,244 @@ datasource db {
 }
 
 model Hospital {
-  id                      String   @id @default(cuid())
-  hospitalName            String
-  sectorCode              String   @default("HOSP") // HOSP, BLDG, MFGR, etc
-  accountStatus           String   @default("Pending Verification") // Pending Verification, Active, Locked
-  industry                String   @default("Healthcare")
-  country                 String   @default("India")
-  state                   String   @default("")
-  builtUpArea             Float    @default(0) // in sqft
-  numberOfBeds            Int      @default(0)
-  numberOfEmployees       Int      @default(0) // FTE
-  averageDailyOccupancy   Int      @default(0)
-  operatingHours          Float    @default(24) // hours per day
-  numberOfFloors          Int      @default(0)
-  yearEstablished         Int      @default(2020)
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  hospitalName          String
+  sectorCode            String   @default("HOSP") // HOSP, BLDG, MFGR, etc
+  accountStatus         String   @default("Pending Verification") // Pending Verification, Active, Locked
+  industry              String   @default("Healthcare")
+  country               String   @default("India")
+  state                 String   @default("")
+  builtUpArea           Float    @default(0) // in sqft
+  numberOfBeds          Int      @default(0)
+  numberOfEmployees     Int      @default(0) // FTE
+  averageDailyOccupancy Int      @default(0)
+  operatingHours        Float    @default(24) // hours per day
+  numberOfFloors        Int      @default(0)
+  yearEstablished       Int      @default(2020)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  users                   User[]
-  electricityData         ElectricityData[]
-  waterData               WaterData[]
-  fuelData                FuelData[]
-  wasteData               WasteData[]
-  refrigerantData         RefrigerantData[]
-  transportData           TransportData[]
-  uploads                 Upload[]
-  dataUploadBatches       DataUploadBatch[]
-  esgScores               ESGScore[]
-  governanceData          GovernanceData?
-  assessmentHistory       AssessmentHistory[]
-  validationResults       ValidationResult[]
-  certificationScores     CertificationScore[]
-  calculatedMetrics       CalculatedMetric[]
-  emissionsSummary        EmissionsSummary[]
+  users               User[]
+  electricityData     ElectricityData[]
+  waterData           WaterData[]
+  fuelData            FuelData[]
+  wasteData           WasteData[]
+  refrigerantData     RefrigerantData[]
+  transportData       TransportData[]
+  uploads             Upload[]
+  dataUploadBatches   DataUploadBatch[]
+  esgScores           ESGScore[]
+  governanceData      GovernanceData?
+  assessmentHistory   AssessmentHistory[]
+  validationResults   ValidationResult[]
+  certificationScores CertificationScore[]
+  calculatedMetrics   CalculatedMetric[]
+  emissionsSummary    EmissionsSummary[]
+  assessmentCycles    AssessmentCycle[]
 }
 
 model User {
-  id                       String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  fullName                 String
+  fullName String
 
-  email                    String   @unique
+  email String @unique
 
-  password                 String
+  password String
 
-  role                     String   @default("hospital_admin")
+  role String @default("hospital_admin")
 
-  hospitalId               String
+  hospitalId String
 
-  emailVerified            Boolean  @default(false)
+  emailVerified Boolean @default(false)
 
-  emailVerificationToken   String?
+  emailVerificationToken String?
 
-  emailVerificationExpiry  DateTime?
+  emailVerificationExpiry DateTime?
 
-  resetPasswordToken       String?
+  resetPasswordToken String?
 
-  resetPasswordExpiry      DateTime?
+  resetPasswordExpiry DateTime?
 
-  failedLoginAttempts      Int      @default(0)
+  failedLoginAttempts Int @default(0)
 
-  accountLockedUntil       DateTime?
+  accountLockedUntil DateTime?
 
-  lastLoginAt              DateTime?
+  lastLoginAt DateTime?
 
-  lastLoginIp              String?
+  lastLoginIp String?
 
-  rememberMeEnabled        Boolean  @default(false)
+  rememberMeEnabled Boolean @default(false)
 
-  createdAt                DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  updatedAt                DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   hospital Hospital @relation(fields: [hospitalId], references: [id])
 }
 
+model AssessmentCycle {
+  id         String    @id @default(cuid())
+  hospitalId String
+  hospital   Hospital  @relation(fields: [hospitalId], references: [id])
+  name       String // e.g., "Default Assessment", "FY 2024"
+  startDate  DateTime?
+  endDate    DateTime?
+  isLocked   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  electricityData     ElectricityData[]
+  waterData           WaterData[]
+  fuelData            FuelData[]
+  wasteData           WasteData[]
+  refrigerantData     RefrigerantData[]
+  transportData       TransportData[]
+  uploads             Upload[]
+  dataUploadBatches   DataUploadBatch[]
+  esgScores           ESGScore[]
+  assessmentHistory   AssessmentHistory[]
+  validationResults   ValidationResult[]
+  certificationScores CertificationScore[]
+  calculatedMetrics   CalculatedMetric[]
+  emissionsSummary    EmissionsSummary[]
+
+  @@index([hospitalId])
+}
+
 /// Enterprise audit record for each accepted Excel ingestion (supports incremental + merge strategies).
 model DataUploadBatch {
-  id                    String   @id @default(cuid())
-  hospitalId            String
-  hospital              Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  category              String
-  sourceFileName        String
-  fileContentHash       String
-  batchVersion          Int
-  resolutionStrategy    String?
-  distinctMonthCount    Int
-  rowCount              Int
-  monthKeysCsv          String?
-  isSuperseded          Boolean  @default(false)
-  supersededAt          DateTime?
-  supersededByBatchId   String?
-  createdAt             DateTime @default(now())
+  id                  String    @id @default(cuid())
+  hospitalId          String
+  hospital            Hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  category            String
+  sourceFileName      String
+  fileContentHash     String
+  batchVersion        Int
+  resolutionStrategy  String?
+  distinctMonthCount  Int
+  rowCount            Int
+  monthKeysCsv        String?
+  isSuperseded        Boolean   @default(false)
+  supersededAt        DateTime?
+  supersededByBatchId String?
+  createdAt           DateTime  @default(now())
 
-  electricityRows ElectricityData[]
-  waterRows       WaterData[]
-  fuelRows        FuelData[]
-  wasteRows       WasteData[]
-  refrigerantRows RefrigerantData[]
-  transportRows   TransportData[]
-  uploadRecord    Upload?
+  electricityRows   ElectricityData[]
+  waterRows         WaterData[]
+  fuelRows          FuelData[]
+  wasteRows         WasteData[]
+  refrigerantRows   RefrigerantData[]
+  transportRows     TransportData[]
+  uploadRecord      Upload?
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle?  @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
   @@index([hospitalId, category, createdAt])
   @@index([hospitalId, category, fileContentHash])
+  @@index([assessmentCycleId])
 }
 
 model ElectricityData {
-  id               String   @id @default(cuid())
-  hospitalId       String
-  hospital         Hospital @relation(fields: [hospitalId], references: [id])
-  month            String
-  year             Int
-  electricityKwh   Float    @default(0)
-  renewableKwh     Float    @default(0)
-  createdAt        DateTime @default(now())
-  sourceBatchId    String?
-  dataUploadBatch  DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  id                String           @id @default(cuid())
+  hospitalId        String
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+  month             String
+  year              Int
+  electricityKwh    Float            @default(0)
+  renewableKwh      Float            @default(0)
+  createdAt         DateTime         @default(now())
+  sourceBatchId     String?
+  dataUploadBatch   DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
-  @@unique([hospitalId, month, year])
+  @@unique([hospitalId, month, year, assessmentCycleId])
 }
 
 model WaterData {
-  id              String   @id @default(cuid())
-  hospitalId      String
-  hospital        Hospital @relation(fields: [hospitalId], references: [id])
-  month           String
-  year            Int
-  waterKl         Float    @default(0)
-  recycledWaterKl Float    @default(0)
-  createdAt       DateTime @default(now())
-  sourceBatchId   String?
-  dataUploadBatch DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  id                String           @id @default(cuid())
+  hospitalId        String
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+  month             String
+  year              Int
+  waterKl           Float            @default(0)
+  recycledWaterKl   Float            @default(0)
+  createdAt         DateTime         @default(now())
+  sourceBatchId     String?
+  dataUploadBatch   DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
-  @@unique([hospitalId, month, year])
+  @@unique([hospitalId, month, year, assessmentCycleId])
 }
 
 model FuelData {
-  id              String   @id @default(cuid())
-  hospitalId      String
-  hospital        Hospital @relation(fields: [hospitalId], references: [id])
-  month           String
-  year            Int
-  dgDieselLitres  Float    @default(0)
-  createdAt       DateTime @default(now())
-  sourceBatchId   String?
-  dataUploadBatch DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  id                String           @id @default(cuid())
+  hospitalId        String
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+  month             String
+  year              Int
+  dgDieselLitres    Float            @default(0)
+  createdAt         DateTime         @default(now())
+  sourceBatchId     String?
+  dataUploadBatch   DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
-  @@unique([hospitalId, month, year])
+  @@unique([hospitalId, month, year, assessmentCycleId])
 }
 
 model WasteData {
-  id                String   @id @default(cuid())
+  id                String           @id @default(cuid())
   hospitalId        String
-  hospital          Hospital @relation(fields: [hospitalId], references: [id])
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
   month             String
   year              Int
-  biomedicalWasteKg Float    @default(0)
-  recyclableWasteKg Float    @default(0)
-  landfillWasteKg   Float    @default(0)
-  createdAt         DateTime @default(now())
+  biomedicalWasteKg Float            @default(0)
+  recyclableWasteKg Float            @default(0)
+  landfillWasteKg   Float            @default(0)
+  createdAt         DateTime         @default(now())
   sourceBatchId     String?
   dataUploadBatch   DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
-  @@unique([hospitalId, month, year])
+  @@unique([hospitalId, month, year, assessmentCycleId])
 }
 
 model RefrigerantData {
-  id                String   @id @default(cuid())
+  id                String           @id @default(cuid())
   hospitalId        String
-  hospital          Hospital @relation(fields: [hospitalId], references: [id])
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
   month             String
   year              Int
   refrigerantType   String
-  refrigerantLeakKg Float    @default(0)
-  createdAt         DateTime @default(now())
+  refrigerantLeakKg Float            @default(0)
+  createdAt         DateTime         @default(now())
   sourceBatchId     String?
   dataUploadBatch   DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
-  @@unique([hospitalId, month, year, refrigerantType])
+  @@unique([hospitalId, month, year, refrigerantType, assessmentCycleId])
 }
 
 model TransportData {
-  id                  String   @id @default(cuid())
+  id                  String           @id @default(cuid())
   hospitalId          String
-  hospital            Hospital @relation(fields: [hospitalId], references: [id])
+  hospital            Hospital         @relation(fields: [hospitalId], references: [id])
   month               String
   year                Int
-  ambulanceFuelLitres Float    @default(0)
-  staffCommuteKm      Float    @default(0)
-  createdAt           DateTime @default(now())
+  ambulanceFuelLitres Float            @default(0)
+  staffCommuteKm      Float            @default(0)
+  createdAt           DateTime         @default(now())
   sourceBatchId       String?
   dataUploadBatch     DataUploadBatch? @relation(fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  assessmentCycleId   String?
+  assessmentCycle     AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
-  @@unique([hospitalId, month, year])
+  @@unique([hospitalId, month, year, assessmentCycleId])
 }
 
 model GovernanceData {
@@ -215,47 +260,52 @@ model GovernanceData {
 }
 
 model Upload {
-  id                 String   @id @default(cuid())
+  id                 String           @id @default(cuid())
   hospitalId         String
-  hospital           Hospital @relation(fields: [hospitalId], references: [id])
+  hospital           Hospital         @relation(fields: [hospitalId], references: [id])
   category           String
   fileUrl            String
   month              String
   year               Int
-  createdAt          DateTime @default(now())
+  createdAt          DateTime         @default(now())
   /// Same as `DataUploadBatch.id` when this row represents a batch ingestion.
-  uploadBatchId      String?  @unique
+  uploadBatchId      String?          @unique
   uploadBatch        DataUploadBatch? @relation(fields: [uploadBatchId], references: [id], onDelete: SetNull)
   /// Monotonic batch sequence for this hospital + category (audit).
-  version            Int      @default(1)
-  isReplaced         Boolean  @default(false)
+  version            Int              @default(1)
+  isReplaced         Boolean          @default(false)
   replacedAt         DateTime?
-  uploadedAt         DateTime @default(now())
+  uploadedAt         DateTime         @default(now())
   rowCount           Int?
   fileContentHash    String?
   resolutionStrategy String?
   sourceFile         String?
+  assessmentCycleId  String?
+  assessmentCycle    AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
   @@index([hospitalId, category, createdAt])
+  @@index([assessmentCycleId])
 }
 
 model ESGScore {
-  id              String   @id @default(cuid())
-  hospitalId      String
-  hospital        Hospital @relation(fields: [hospitalId], references: [id])
-  overallScore    Float
-  energyScore     Float
-  waterScore      Float
-  wasteScore      Float
-  governanceScore Float
-  emissionsScore  Float
-  createdAt       DateTime @default(now())
+  id                String           @id @default(cuid())
+  hospitalId        String
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+  overallScore      Float
+  energyScore       Float
+  waterScore        Float
+  wasteScore        Float
+  governanceScore   Float
+  emissionsScore    Float
+  createdAt         DateTime         @default(now())
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 }
 
 model AssessmentHistory {
-  id                     String   @id @default(cuid())
+  id                     String           @id @default(cuid())
   hospitalId             String
-  createdAt              DateTime @default(now())
+  createdAt              DateTime         @default(now())
   completenessPct        Float?
   confidenceScore        Float?
   annualizedValues       Json?
@@ -263,81 +313,94 @@ model AssessmentHistory {
   certificationReadiness Json?
   gapAnalysis            Json?
   readinessStage         String?
-  hospital               Hospital @relation(fields: [hospitalId], references: [id])
+  hospital               Hospital         @relation(fields: [hospitalId], references: [id])
+  assessmentCycleId      String?
+  assessmentCycle        AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 
   @@index([hospitalId])
+  @@index([assessmentCycleId])
 }
 
 // NEW MODELS FOR BRD COMPLIANCE
 
 model ValidationResult {
-  id            String   @id @default(cuid())
-  hospitalId    String
-  hospital      Hospital @relation(fields: [hospitalId], references: [id])
-  category      String // electricity, water, waste, fuel, refrigerant
-  checkType     String // negative_value, missing_months, spike_detection, duplicate_entry, unit_consistency, cross_category
-  status        String // Pass, Partial, Fail
-  affectedMonth String? // month affected
-  affectedYear  Int?
-  notes         String?
-  createdAt     DateTime @default(now())
+  id                String           @id @default(cuid())
+  hospitalId        String
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+  category          String // electricity, water, waste, fuel, refrigerant
+  checkType         String // negative_value, missing_months, spike_detection, duplicate_entry, unit_consistency, cross_category
+  status            String // Pass, Partial, Fail
+  affectedMonth     String? // month affected
+  affectedYear      Int?
+  notes             String?
+  createdAt         DateTime         @default(now())
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 }
 
 model CertificationScore {
-  id                     String   @id @default(cuid())
-  hospitalId             String
-  hospital               Hospital @relation(fields: [hospitalId], references: [id])
-  certificationName      String // IGBC Healthcare, LEED, NABH, ISO 14001, WELL, BRSR, GRI, etc
-  readinessPercent       Float
-  statusLabel            String // Not Ready, Foundational, Certification Possible, Strong Readiness, Advanced
-  majorGap               String?
-  recommendedTimeline    String? // <3M, 3-6M, 6-12M, 12-18M, 12+M
-  prerequisitesMetJson   Json? // Track which prerequisites are met
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                   String           @id @default(cuid())
+  hospitalId           String
+  hospital             Hospital         @relation(fields: [hospitalId], references: [id])
+  certificationName    String // IGBC Healthcare, LEED, NABH, ISO 14001, WELL, BRSR, GRI, etc
+  readinessPercent     Float
+  statusLabel          String // Not Ready, Foundational, Certification Possible, Strong Readiness, Advanced
+  majorGap             String?
+  recommendedTimeline  String? // <3M, 3-6M, 6-12M, 12-18M, 12+M
+  prerequisitesMetJson Json? // Track which prerequisites are met
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  assessmentCycleId    String?
+  assessmentCycle      AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 }
 
 model CalculatedMetric {
-  id                 String   @id @default(cuid())
+  id                 String           @id @default(cuid())
   hospitalId         String
-  hospital           Hospital @relation(fields: [hospitalId], references: [id])
+  hospital           Hospital         @relation(fields: [hospitalId], references: [id])
   metricName         String // Energy Intensity, Water Intensity, Renewable %, etc
   rawValue           Float?
   annualizedValue    Float?
   unit               String
-  confidenceModifier Float    @default(1.0)
+  confidenceModifier Float            @default(1.0)
   benchmarkStatus    String? // Within, Slightly Below, Above, Insufficient Data
-  createdAt          DateTime @default(now())
+  createdAt          DateTime         @default(now())
+  assessmentCycleId  String?
+  assessmentCycle    AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 }
 
 model EmissionsSummary {
-  id         String   @id @default(cuid())
-  hospitalId String
-  hospital   Hospital @relation(fields: [hospitalId], references: [id])
-  scope      String // Scope 1, Scope 2, Scope 3
-  source     String // Diesel, PNG, Electricity, Waste, etc
-  kgCO2e     Float
-  tCO2e      Float
-  factorUsed String?
-  createdAt  DateTime @default(now())
+  id                String           @id @default(cuid())
+  hospitalId        String
+  hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+  scope             String // Scope 1, Scope 2, Scope 3
+  source            String // Diesel, PNG, Electricity, Waste, etc
+  kgCO2e            Float
+  tCO2e             Float
+  factorUsed        String?
+  createdAt         DateTime         @default(now())
+  assessmentCycleId String?
+  assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
 }
 
 model CertificationApplicability {
-  id                  String @id @default(cuid())
-  sectorCode          String // HOSP, BLDG, MFGR, etc
-  certificationName   String
-  importanceLevel     String // Mandatory, Highly Recommended, Optional
+  id                String @id @default(cuid())
+  sectorCode        String // HOSP, BLDG, MFGR, etc
+  certificationName String
+  importanceLevel   String // Mandatory, Highly Recommended, Optional
+
   @@unique([sectorCode, certificationName])
 }
 
 model BenchmarkMaster {
-  id             String @id @default(cuid())
-  sectorCode     String
-  metricName     String // Energy Intensity, Water Intensity, etc
-  efficientMax   Float
-  acceptableMin  Float
-  acceptableMax  Float
-  unit           String
+  id            String @id @default(cuid())
+  sectorCode    String
+  metricName    String // Energy Intensity, Water Intensity, etc
+  efficientMax  Float
+  acceptableMin Float
+  acceptableMax Float
+  unit          String
+
   @@unique([sectorCode, metricName])
 }
 
@@ -349,6 +412,7 @@ model EmissionFactor {
   unit            String // kgCO2e/unit
   overrideAllowed Boolean  @default(true)
   createdAt       DateTime @default(now())
+
   @@unique([sourceType, region])
 }
 
@@ -358,6 +422,7 @@ model ConfidenceThreshold {
   monthsMax       Int
   modifier        Float
   confidenceLabel String // High, Medium, Low, Insufficient
+
   @@unique([monthsMin, monthsMax])
 }
 
@@ -373,4 +438,59 @@ model AdminAuditLog {
 
   @@index([createdAt])
   @@index([entityType])
+}
+
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model ScoringWeight {
+  id          String   @id @default(cuid())
+  category    String   @unique
+  weightValue Float
+  updatedAt   DateTime @updatedAt
+}
+
+model CertificationCutoff {
+  id                String   @id @default(cuid())
+  certificationName String   @unique
+  minCompleteness   Float?
+  minConfidence     Float?
+  minGovernance     Float?
+  minRenewable      Float?
+  minWaterRecycled  Float?
+  minWasteDiversion Float?
+  minEnergyScore    Float?
+  updatedAt         DateTime @updatedAt
+}
+
+model AnnualizationModifier {
+  id           String   @id @default(cuid())
+  monthsMin    Int
+  monthsMax    Int
+  modifierRate Float
+  updatedAt    DateTime @updatedAt
+
+  @@unique([monthsMin, monthsMax])
+}
+
+model KpiRange {
+  id           String   @id @default(cuid())
+  metricName   String   @unique
+  excellentMax Float
+  goodMax      Float
+  fairMax      Float
+  updatedAt    DateTime @updatedAt
+}
+
+model RiskThreshold {
+  id             String   @id @default(cuid())
+  regulationName String   @unique
+  lowRiskMin     Float
+  mediumRiskMin  Float
+  updatedAt      DateTime @updatedAt
 }
