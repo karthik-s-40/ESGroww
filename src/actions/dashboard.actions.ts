@@ -28,13 +28,14 @@ import {
 import { cookies } from "next/headers";
 
 export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
-  if (!assessmentCycleId) {
-    const cookieStore = await cookies();
-    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
-  }
-  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
-  
-  const hospital = await prisma.hospital.findFirst({
+  try {
+    if (!assessmentCycleId) {
+      const cookieStore = await cookies();
+      assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+    }
+    const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
+
+    const hospital = await prisma.hospital.findFirst({
     select: {
       hospitalName: true,
       industry: true,
@@ -50,10 +51,11 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
     },
   });
 
-  if (!hospital) {
-    throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
-  }
+    if (!hospital) {
+      throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
+    }
 
+    const { factors } = await getAdminCalculationFactors();
   const config = await getESGConfiguration();
 
   /* =============================== */
@@ -406,7 +408,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
   /* FINAL RESPONSE                  */
   /* =============================== */
 
-  return {
+    return {
     hospitalName:
       hospital.hospitalName,
 
@@ -476,5 +478,12 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
     readinessScore,
 
     certifications,
-  };
+    };
+  } catch (error) {
+    console.error("[dashboard.actions] Failed to build dashboard intelligence:", error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR, 500, "DASHBOARD_INTELLIGENCE_ERROR");
+  }
 }

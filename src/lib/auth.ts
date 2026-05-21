@@ -7,25 +7,22 @@ import {
 } from "@/lib/session";
 
 export async function getCurrentUser() {
-  const cookieStore = await cookies();
+  try {
+    const cookieStore = await cookies();
 
-  const token =
-    cookieStore.get("session")
-      ?.value;
+    const token = cookieStore.get("session")?.value;
 
-  if (!token) {
-    return null;
-  }
+    if (!token) {
+      return null;
+    }
 
-  const payload =
-    verifySessionToken(token);
+    const payload = verifySessionToken(token);
 
-  if (!payload) {
-    return null;
-  }
+    if (!payload) {
+      return null;
+    }
 
-  const user =
-    await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         id: payload.userId,
       },
@@ -35,5 +32,9 @@ export async function getCurrentUser() {
       },
     });
 
-  return user;
+    return user;
+  } catch (error) {
+    console.error("[auth:getCurrentUser] Failed to resolve current user:", error);
+    return null;
+  }
 }

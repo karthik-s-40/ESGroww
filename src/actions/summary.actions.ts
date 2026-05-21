@@ -24,17 +24,18 @@ function annualizationDenominator(distinctMonths: number): number {
 import { cookies } from "next/headers";
 
 export async function getSummaryData(assessmentCycleId?: string) {
-  if (!assessmentCycleId) {
-    const cookieStore = await cookies();
-    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
-  }
-  /* ===================================== */
-  /* GET HOSPITAL                          */
-  /* ===================================== */
+  try {
+    if (!assessmentCycleId) {
+      const cookieStore = await cookies();
+      assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+    }
+    /* ===================================== */
+    /* GET HOSPITAL                          */
+    /* ===================================== */
 
-  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
+    const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
 
-  const hospital = await prisma.hospital.findFirst({
+    const hospital = await prisma.hospital.findFirst({
     select: {
     hospitalName: true,
     industry: true,
@@ -50,11 +51,11 @@ export async function getSummaryData(assessmentCycleId?: string) {
   },
 });
 
-if (!hospital) {
-  throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
-}
+    if (!hospital) {
+      throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
+    }
 
-  const config = await getESGConfiguration();
+    const { factors } = await getAdminCalculationFactors();
 
   /* ===================================== */
   /* MONTH COVERAGE                        */
@@ -396,7 +397,7 @@ if (!hospital) {
   /* RETURN FINAL DATA                     */
   /* ===================================== */
 
-  return {
+    return {
     hospital: {
       name:
         hospital.hospitalName,
@@ -495,5 +496,12 @@ if (!hospital) {
     },
 
     checks,
-  };
+    };
+  } catch (error) {
+    console.error("[summary.actions] Failed to build summary data:", error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR, 500, "SUMMARY_GENERATION_ERROR");
+  }
 }

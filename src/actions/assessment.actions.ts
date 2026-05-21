@@ -2,7 +2,8 @@
  
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { getESGConfiguration } from "@/lib/config-engine";
+import { getAdminCalculationFactors } from "@/lib/adminConfig";
+import { AppError, ERROR_MESSAGES } from "@/lib/errors";
  
 import {
   calculateScope2Emissions,
@@ -60,29 +61,30 @@ function annualizationDenominator(distinctMonths: number): number {
 import { cookies } from "next/headers";
 
 export async function computeAndSaveAssessment(assessmentCycleId?: string) {
-  if (!assessmentCycleId) {
-    const cookieStore = await cookies();
-    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
-  }
-  const user = await getCurrentUser();
+  try {
+    if (!assessmentCycleId) {
+      const cookieStore = await cookies();
+      assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+    }
+    const user = await getCurrentUser();
  
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.UNAUTHORIZED, 401, "AUTH_ERROR");
+    }
  
-  const hospitalId = user.hospitalId;
+    const hospitalId = user.hospitalId;
  
-  const hospital = await prisma.hospital.findUnique({
-    where: {
-      id: hospitalId,
-    },
-  });
+    const hospital = await prisma.hospital.findUnique({
+      where: {
+        id: hospitalId,
+      },
+    });
  
-  if (!hospital) {
-    throw new Error("Hospital not found");
-  }
+    if (!hospital) {
+      throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404, "HOSPITAL_NOT_FOUND");
+    }
  
-  const config = await getESGConfiguration();
+    const { factors } = await getAdminCalculationFactors();
  
   // ─────────────────────────────────────────────
   // FETCH DATA
@@ -868,7 +870,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
   // FINAL RESPONSE
   // ─────────────────────────────────────────────
  
-  return {
+    return {
     overallScore,
  
     readinessStage,
@@ -1064,6 +1066,13 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         totalWaste,
       recyclableWaste,
     },
-  };
+    };
+  } catch (error) {
+    console.error("[assessment.actions] Failed to compute and save assessment:", error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError("Assessment generation failed.", 500, "ASSESSMENT_CALCULATION_ERROR");
+  }
 }
  
