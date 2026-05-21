@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { AppError, ERROR_MESSAGES } from "@/lib/errors";
-import { getAdminCalculationFactors } from "@/lib/adminConfig";
+import { getESGConfiguration } from "@/lib/config-engine";
 import {
   annualizeElectricity,
   annualizeFuel,
@@ -182,7 +182,7 @@ export async function getSummaryData(assessmentCycleId?: string) {
         calculateRefrigerantEmissions(
           item.refrigerantType,
           item.refrigerantLeakKg,
-          factors
+          config
         ),
       0
     );
@@ -257,19 +257,19 @@ export async function getSummaryData(assessmentCycleId?: string) {
   const electricityEmissions =
     calculateScope2Emissions(
       annualizedElectricity,
-      factors
+      config
     );
 
   const dieselEmissions =
     calculateDieselEmissions(
       annualizedDiesel,
-      factors
+      config
     );
 
   const transportEmissions =
     calculateTransportEmissions(
       annualizedTransportFuel,
-      factors
+      config
     );
 
   const refrigerantEmissions =

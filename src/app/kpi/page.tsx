@@ -3,17 +3,7 @@
 import { useFetchAssessment } from "@/hooks/useFetchAssessment";
 import KPICard from "@/components/kpi/KPICard";
 import PageLayout from "@/components/shared/PageLayout";
-import {
-  evaluateEnergyIntensity,
-  evaluateWaterIntensity,
-  evaluateRecyclingRate,
-  evaluateWasteSegregation,
-  evaluateRenewableEnergy,
-  evaluateTankerWaterDependency,
-  evaluateWaterReuse,
-  evaluatePowerFactor,
-  evaluateDGDependency,
-} from "@/lib/kpiUtils";
+import { getStatusColor, getStatusBadgeColor, type KPIBenchmark } from "@/lib/kpiUtils";
 
 export default function KPIPage() {
   const { data, loading, error } = useFetchAssessment();
@@ -55,16 +45,16 @@ export default function KPIPage() {
   const tankerWaterDependency = 0;
 
   // Calculate KPI objects
-  const kpis = {
-    energyIntensity: evaluateEnergyIntensity(energyIntensity),
-    waterIntensity: evaluateWaterIntensity(waterIntensity),
-    recyclingRate: evaluateRecyclingRate(wasteRecyclingPercentage),
-    wasteSegregation: evaluateWasteSegregation(wasteRecyclingPercentage),
-    renewableEnergy: evaluateRenewableEnergy(renewablePercentage),
-    tankerDependency: evaluateTankerWaterDependency(tankerWaterDependency),
-    waterReuse: evaluateWaterReuse(waterRecyclingPercentage),
-    powerFactor: evaluatePowerFactor(powerFactor),
-    dgDependency: evaluateDGDependency(dgDependency),
+  const kpis = typedData?.evaluatedKpis || {
+    energyIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    waterIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    recyclingRate: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    wasteSegregation: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    renewableEnergy: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    tankerDependency: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    waterReuse: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    powerFactor: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    dgDependency: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
   };
 
   const kpiItems = [

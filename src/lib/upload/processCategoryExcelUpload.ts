@@ -572,15 +572,15 @@ export async function processCategoryExcelUpload(
       sourceFileName = file.name;
       const bytes = await file.arrayBuffer();
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(Buffer.from(bytes));
+      await workbook.xlsx.load(bytes);
       const worksheet = workbook.worksheets[0];
       const headerRow = worksheet.getRow(1);
-      const headers = (headerRow.values ?? []).slice(1).map((v: unknown) => String(v ?? "").trim());
+      const headers = (Array.isArray(headerRow.values) ? headerRow.values : []).slice(1).map((v: unknown) => String(v ?? "").trim());
       rows = [];
       for (let r = 2; r <= worksheet.rowCount; r++) {
         const excelRow = worksheet.getRow(r);
         // skip empty rows
-        const allEmpty = excelRow.values.every((v: unknown) => v === null || v === undefined || String(v).trim() === "");
+        const allEmpty = (Array.isArray(excelRow.values) ? excelRow.values : []).every((v: unknown) => v === null || v === undefined || String(v).trim() === "");
         if (allEmpty) continue;
         const obj: Record<string, unknown> = {};
         for (let c = 1; c <= headers.length; c++) {

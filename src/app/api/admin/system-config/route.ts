@@ -6,6 +6,7 @@ import {
   BRD_MIN_MONTHS_FOR_ANNUALIZATION,
   BRD_MIN_MONTHS_FOR_READINESS_GATE,
 } from "@/lib/upload/brdConstants";
+import { revalidateTag } from "next/cache";
 
 export async function GET() {
   try {
@@ -119,6 +120,7 @@ export async function PATCH(req: Request) {
         summary: `Updated confidence band ${next.monthsMin}-${next.monthsMax} months`,
         metadata: { before: prev, after: next },
       });
+      revalidateTag("esg-config", "max");
       return NextResponse.json({ ok: true, row: next });
     }
 
@@ -141,6 +143,7 @@ export async function PATCH(req: Request) {
         summary: `Updated applicability ${next.certificationName} (${next.sectorCode})`,
         metadata: { before: prev, after: next },
       });
+      revalidateTag("esg-config", "max");
       return NextResponse.json({ ok: true, row: next });
     }
 
@@ -150,3 +153,141 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Update failed" }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    const body = (await req.json()) as {
+      type: "benchmark" | "emissionFactor" | "confidence" | "applicability";
+      data: Record<string, unknown>;
+    };
+
+    if (!body?.type || !body?.data) {
+      return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    }
+
+    if (body.type === "benchmark") {
+      const { sectorCode, metricName, efficientMax, acceptableMin, acceptableMax, unit } = body.data as Record<string, string | number>;
+      const next = await prisma.benchmarkMaster.create({
+        data: {
+          sectorCode: String(sectorCode || "HOSP"),
+          metricName: String(metricName || "New Metric"),
+          efficientMax: Number(efficientMax || 0),
+          acceptableMin: Number(acceptableMin || 0),
+          acceptableMax: Number(acceptableMax || 0),
+          unit: String(unit || ""),
+        },
+      });
+      await logAdminAudit({
+        action: "benchmark.create",
+        entityType: "BenchmarkMaster",
+        entityId: next.id,
+        summary: `Created benchmark ${next.metricName}`,
+        metadata: { after: next },
+      });
+      revalidateTag("esg-config", "max");
+      return NextResponse.json({ ok: true, row: next });
+    }
+
+    if (body.type === "emissionFactor") {
+      const { sourceType, region, factorValue, unit, overrideAllowed } = body.data as Record<string, unknown>;
+      const next = await prisma.emissionFactor.create({
+        data: {
+          sourceType: String(sourceType || "Electricity"),
+          region: String(region || "National"),
+          factorValue: Number(factorValue || 0),
+          unit: String(unit || ""),
+          overrideAllowed: Boolean(overrideAllowed),
+        },
+      });
+      await logAdminAudit({
+        action: "emissionFactor.create",
+        entityType: "EmissionFactor",
+        entityId: next.id,
+        summary: `Created emission factor ${next.sourceType}`,
+        metadata: { after: next },
+      });
+      revalidateTag("esg-config", "max");
+      return NextResponse.json({ ok: true, row: next });
+    }
+
+    if (body.type === "confidence") {
+      const { monthsMin, monthsMax, modifier, confidenceLabel } = body.data as Record<string, unknown>;
+      const next = await prisma.confidenceThreshold.create({
+        data: {
+          monthsMin: Number(monthsMin || 0),
+          monthsMax: Number(monthsMax || 0),
+          modifier: Number(modifier || 0),
+          confidenceLabel: String(confidenceLabel || "Unknown"),
+        },
+      });
+      await logAdminAudit({
+        action: "confidenceThreshold.create",
+        entityType: "ConfidenceThreshold",
+        entityId: next.id,
+        summary: `Created confidence band`,
+        metadata: { after: next },
+      });
+      revalidateTag("esg-config", "max");
+      return NextResponse.json({ ok: true, row: next });
+    }
+
+    if (body.type === "applicability") {
+      const { sectorCode, certificationName, importanceLevel } = body.data as Record<string, unknown>;
+      const next = await prisma.certificationApplicability.create({
+        data: {
+          sectorCode: String(sectorCode || "HOSP"),
+          certificationName: String(certificationName || "ISO"),
+          importanceLevel: String(importanceLevel || "High"),
+        },
+      });
+      await logAdminAudit({
+        action: "certificationApplicability.create",
+        entityType: "CertificationApplicability",
+        entityId: next.id,
+        summary: `Created applicability ${next.certificationName}`,
+        metadata: { after: next },
+      });
+      revalidateTag("esg-config", "max");
+      return NextResponse.json({ ok: true, row: next });
+    }
+
+    if (body.type === "seed") {
+      await prisma.emissionFactor.createMany({
+        data: [
+          { sourceType: "Electricity", region: "National", factorValue: 0.72, unit: "kgCO2e/kWh", overrideAllowed: false },
+          { sourceType: "Diesel", region: "National", factorValue: 2.68, unit: "kgCO2e/L", overrideAllowed: false },
+          { sourceType: "AmbulanceFuel", region: "National", factorValue: 2.68, unit: "kgCO2e/L", overrideAllowed: false },
+          { sourceType: "Waste", region: "National", factorValue: 0.8, unit: "kgCO2e/kg", overrideAllowed: false },
+          { sourceType: "Water", region: "National", factorValue: 0.5, unit: "kgCO2e/kL", overrideAllowed: false },
+        ],
+        skipDuplicates: true
+      });
+      await prisma.benchmarkMaster.createMany({
+        data: [
+          { sectorCode: "HOSP", metricName: "renewablePercentage", efficientMax: 30, acceptableMin: 0, acceptableMax: 20, unit: "%" },
+          { sectorCode: "HOSP", metricName: "waterRecyclingPercentage", efficientMax: 25, acceptableMin: 0, acceptableMax: 15, unit: "%" },
+          { sectorCode: "HOSP", metricName: "wasteDiversionPercentage", efficientMax: 40, acceptableMin: 0, acceptableMax: 30, unit: "%" },
+          { sectorCode: "HOSP", metricName: "energyPerBed", efficientMax: 15000, acceptableMin: 18000, acceptableMax: 20000, unit: "kWh/bed" },
+          { sectorCode: "HOSP", metricName: "waterPerBed", efficientMax: 800, acceptableMin: 1000, acceptableMax: 1200, unit: "kL/bed" },
+          { sectorCode: "HOSP", metricName: "wastePerBed", efficientMax: 1200, acceptableMin: 1500, acceptableMax: 1800, unit: "kg/bed" },
+        ],
+        skipDuplicates: true
+      });
+      await logAdminAudit({
+        action: "system.seed",
+        entityType: "System",
+        entityId: "seed",
+        summary: `Seeded default master data`,
+        metadata: {},
+      });
+      revalidateTag("esg-config", "max");
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json({ error: "Unknown type" }, { status: 400 });
+  } catch (e) {
+    console.error("system-config post", e);
+    return NextResponse.json({ error: "Create failed" }, { status: 500 });
+  }
+}
+

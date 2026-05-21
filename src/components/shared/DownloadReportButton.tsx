@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { buildResultsPdfWithTemplate, triggerPdfDownload } from "@/lib/pdf/buildResultsPdfWithTemplate";
+import { type KPIBenchmark } from "@/lib/kpiUtils";
 
 export interface DownloadReportData {
   orgName?: string;
@@ -23,6 +24,7 @@ export interface DownloadReportData {
   gaps?: { text: string; severity: "High" | "Medium" | "Low" }[];
   regulatoryReadiness?: { regulation: string; readiness: number; risk: "Low" | "Medium" | "Medium-High" | "High" }[];
   roadmap?: { action: string; timeline: string; impact: string }[];
+  evaluatedKpis?: Record<string, KPIBenchmark>;
 }
 
 interface DownloadReportButtonProps {

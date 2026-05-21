@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ExternalLink, Radio } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import mark from "@/app/logo.png";
-import Image from "next/image";
 
 const TITLE: Record<string, string> = {
   "/admin": "Executive Overview",
@@ -60,16 +58,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <div className="relative min-h-0 flex-1 overflow-y-auto">
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="relative opacity-[0.035]"
-            >
-              <Image src={mark} alt="" width={420} height={420} className="max-w-[min(55vw,420px)]" priority={false} />
-            </motion.div>
-          </div>
           <motion.div
             className="relative z-10 mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-6"
             initial={{ opacity: 0, y: 6 }}

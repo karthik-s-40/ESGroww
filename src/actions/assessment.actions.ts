@@ -35,6 +35,17 @@ import {
   generatePriorityRoadmap,
 } from "@/lib/esgCalculations";
 import {
+  evaluateEnergyIntensity,
+  evaluateWaterIntensity,
+  evaluateRecyclingRate,
+  evaluateWasteSegregation,
+  evaluateRenewableEnergy,
+  evaluateTankerWaterDependency,
+  evaluateWaterReuse,
+  evaluatePowerFactor,
+  evaluateDGDependency,
+} from "@/lib/kpiUtils";
+import {
   BRD_MIN_MONTHS_FOR_ANNUALIZATION,
   BRD_MIN_MONTHS_FOR_READINESS_GATE,
 } from "@/lib/upload/brdConstants";
@@ -282,13 +293,13 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
   const scope2Emissions =
     calculateScope2Emissions(
       annualizedElectricity,
-      factors
+      config
     );
  
   const dieselEmissions =
     calculateDieselEmissions(
       annualizedFuel,
-      factors
+      config
     );
  
   const transportEmissions =
@@ -297,7 +308,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         sum +
         calculateTransportEmissions(
           row.ambulanceFuelLitres,
-          factors
+          config
         ),
       0
     );
@@ -309,17 +320,17 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         calculateRefrigerantEmissions(
           row.refrigerantType,
           row.refrigerantLeakKg,
-          factors
+          config
         ),
       0
     );
  
   // Compute water and waste emissions (used for Scope 3)
   const wasteEmissions =
-    calculateWasteEmissions(annualizedWaste, factors);
+    calculateWasteEmissions(annualizedWaste, config);
  
   const waterEmissions =
-    calculateWaterEmissions(annualizedWater, factors);
+    calculateWaterEmissions(annualizedWater, config);
  
   const totalEmissions =
     scope2Emissions +
@@ -390,7 +401,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         false,
       coverageRatio:
         confidenceScore,
-    });
+    }, config);
  
   // ─────────────────────────────────────────────
   // BENCHMARKS
@@ -407,7 +418,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       energyIntensityPerSqft,
       waterPerBed,
       wastePerBed,
-    });
+    }, config);
  
   // ─────────────────────────────────────────────
   // CATEGORY SCORES
@@ -424,7 +435,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       electricityCompleteness,
       waterCompleteness,
       wasteCompleteness,
-    });
+    }, config);
  
   // ─────────────────────────────────────────────
   // GAP ANALYSIS
@@ -453,7 +464,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
     completeness: overallCompleteness,
     confidence: confidenceScore,
     certificationReady: overallScore >= 70,
-  });
+  }, config);
  
   if (!readinessEligible) {
     readinessStage = "Operational data lock (months)";
@@ -475,7 +486,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       confidence:
         confidenceScore,
       benchmarkScores,
-    });
+    }, config);
  
   // ─────────────────────────────────────────────
   // STRENGTHS & GAPS
@@ -497,7 +508,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       electricityCompleteness,
       waterCompleteness,
       wasteCompleteness,
-    });
+    }, config);
  
   // ─────────────────────────────────────────────
   // ROADMAP
@@ -513,7 +524,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       completeness:
         overallCompleteness,
       benchmarkScores,
-    });
+    }, config);
  
   // ─────────────────────────────────────────────
   // CATEGORY CONFIDENCE
@@ -792,6 +803,30 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       },
     ];
  
+  // ─────────────────────────────────────────────
+  // EVALUATED KPIs (for KPI page)
+  // ─────────────────────────────────────────────
+
+  // Percentages from assessment data
+  const wasteRecyclingPercentage = totalWaste > 0 ? (recyclableWaste / totalWaste) * 100 : 0;
+  
+  // Placeholder values - these need actual meter/supply data
+  const powerFactor = 0.85;
+  const dgDependency = 0;
+  const tankerWaterDependency = 0;
+
+  const evaluatedKpis = {
+    energyIntensity: evaluateEnergyIntensity(energyIntensityPerSqft, config),
+    waterIntensity: evaluateWaterIntensity(waterPerBed, config), // Note: waterIntensity requires sqft in real scenario, fallback here
+    recyclingRate: evaluateRecyclingRate(wasteRecyclingPercentage, config),
+    wasteSegregation: evaluateWasteSegregation(wasteRecyclingPercentage, config),
+    renewableEnergy: evaluateRenewableEnergy(renewablePercentage, config),
+    tankerDependency: evaluateTankerWaterDependency(tankerWaterDependency, config),
+    waterReuse: evaluateWaterReuse(waterRecyclingPercentage, config),
+    powerFactor: evaluatePowerFactor(powerFactor, config),
+    dgDependency: evaluateDGDependency(dgDependency, config),
+  };
+
   // ─────────────────────────────────────────────
   // SAVE HISTORY
   // ─────────────────────────────────────────────
