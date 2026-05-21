@@ -341,39 +341,23 @@ export const guideSections: GuideSection[] = [
       },
       {
         step: "03",
-        title: "Open Analysis for benchmark comparison",
-        description: "Switch to Analysis to compare the platform’s output against the built-in benchmark lens.",
-        result: "You can interpret the same data from a comparison perspective instead of only a scorecard perspective.",
-        screenshots: [
-          {
-            src: "/help-shots/analysis.png",
-            alt: "Benchmark analysis page with radar-style comparison",
-          },
-        ],
-      },
-      {
-        step: "04",
-        title: "Use the three views together",
-        description: "Read KPI, Metrics, and Analysis as one workflow when deciding what to upload, fix, or communicate next.",
+        title: "Use the two views together",
+        description: "Read KPI and Metrics as one workflow when deciding what to upload, fix, or communicate next.",
         result: "The analytics stack turns raw assessment output into practical next actions.",
         screenshots: [
           {
             src: "/help-shots/kpi.png",
-            alt: "KPI scorecards used alongside the metrics and analysis pages",
+            alt: "KPI scorecards used alongside the metrics page",
           },
           {
             src: "/help-shots/metrics.png",
-            alt: "Metrics page used alongside the KPI and analysis pages",
-          },
-          {
-            src: "/help-shots/analysis.png",
-            alt: "Analysis page used alongside KPI and metrics",
+            alt: "Metrics page used alongside KPI scorecards",
           },
         ],
       },
     ],
     tips: [
-      "Read KPI first if you want a quick status check, then move to Metrics for data quality, and finish with Analysis for benchmark context.",
+      "Read KPI first if you want a quick status check, then move to Metrics for data quality.",
       "Confidence and completeness are not the same thing.",
       "Use analytics after a fresh upload batch so the charts reflect the latest assessment data.",
     ],

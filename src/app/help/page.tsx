@@ -26,11 +26,6 @@ import { guideSections } from "../../components/help/guideSections";
 // `guideSections` is extracted to a dedicated data file: see components/help/guideSections.ts
 
 const totalSteps = guideSections.reduce((count, section) => count + section.steps.length, 0);
-const totalScreenshots = guideSections.reduce(
-  (count, section) => count + section.steps.reduce((stepCount, step) => stepCount + step.screenshots.length, 0),
-  0
-);
-
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -44,21 +39,19 @@ export default function HelpPage() {
         <div className="rounded-3xl border border-border bg-gradient-to-br from-card via-background to-muted/40 p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="max-w-3xl space-y-4">
-              <PageTitle>ESGroww help center</PageTitle>
+              <PageTitle>ESGroww user manual</PageTitle>
               <BodyText className="max-w-3xl">
-                This walkthrough covers the full user-side workflow from account access to uploads, reporting,
-                analytics, reference screens, and the chatbot. Every step includes a real screenshot from the app.
+                This manual covers the user-side workflow from account access to uploads, reporting, analytics,
+                reference screens, and the chatbot.
               </BodyText>
               <BodyText className="max-w-3xl">
-                Use the sticky table of contents to jump to any section, then follow the step cards in order for a
-                plain-language guide to the platform.
+                Use the table of contents to jump to any section, then follow the steps in order.
               </BodyText>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[360px] lg:grid-cols-1">
-              <StatCard label="Walkthrough sections" value={String(guideSections.length)} note="The main user flows" />
-              <StatCard label="Step-by-step screens" value={String(totalSteps)} note="Every major action covered" />
-              <StatCard label="Screenshots included" value={String(totalScreenshots)} note="Real captures from the app" />
+            <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[360px] lg:grid-cols-1">
+              <StatCard label="Sections" value={String(guideSections.length)} note="Topics covered in this manual" />
+              <StatCard label="Steps" value={String(totalSteps)} note="Actions listed in order" />
             </div>
           </div>
         </div>
@@ -70,7 +63,7 @@ export default function HelpPage() {
               <span>How the guide works</span>
             </div>
           }
-          description="The page is organized around the normal user journey, so you can read it top to bottom or jump to the part you need."
+          description="The page is organized as a manual, so you can read it top to bottom or jump to the part you need."
           size="sm"
         >
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
