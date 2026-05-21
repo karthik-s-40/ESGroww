@@ -15,6 +15,7 @@ import {
   Settings,
   ShieldAlert,
   Upload,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const NAV: NavItem[] = [
   { href: "/admin/risk-analysis", label: "Risk Analysis", icon: ShieldAlert },
   { href: "/admin/hospitals", label: "Organizations", icon: Building2 },
   { href: "/admin/reports", label: "Reports", icon: ClipboardList },
+  { href: "/admin/users", label: "Users & Roles", icon: Users },
   { href: "/admin/system-config", label: "System Config", icon: Settings },
   { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
 ] as const;

@@ -433,13 +433,7 @@ model AdminAuditLog {
   @@index([entityType])
 }
 
-model SystemConfig {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  value       Json
-  description String?
-  updatedAt   DateTime @updatedAt
-}
+
 
 model ScoringWeight {
   id          String   @id @default(cuid())
@@ -480,10 +474,3 @@ model KpiRange {
   updatedAt    DateTime @updatedAt
 }
 
-model RiskThreshold {
-  id             String   @id @default(cuid())
-  regulationName String   @unique
-  lowRiskMin     Float
-  mediumRiskMin  Float
-  updatedAt      DateTime @updatedAt
-}
