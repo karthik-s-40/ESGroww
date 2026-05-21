@@ -19,7 +19,7 @@ export default function MonthlyDataForm() {
       renewableKwh: formData.get("renewableKwh"),
       dgDieselLitres: formData.get("dgDieselLitres"),
 
-      waterKl: formData.get("waterKl"),
+      totalWaterConsumptionKl: formData.get("totalWaterConsumptionKl"),
       recycledWaterKl: formData.get("recycledWaterKl"),
 
       totalWasteKg: formData.get("totalWasteKg"),
@@ -71,7 +71,7 @@ export default function MonthlyDataForm() {
       />
 
       <input
-        name="waterKl"
+        name="totalWaterConsumptionKl"
         placeholder="Water KL"
         className="border p-3 rounded-xl"
       />

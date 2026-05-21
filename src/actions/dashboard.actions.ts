@@ -42,7 +42,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
       numberOfBeds: true,
       builtUpArea: true,
       electricityData: dataCondition ? { ...dataCondition, select: { electricityKwh: true, renewableKwh: true, month: true, year: true } } : { select: { electricityKwh: true, renewableKwh: true, month: true, year: true } },
-      waterData: dataCondition ? { ...dataCondition, select: { waterKl: true, recycledWaterKl: true, month: true, year: true } } : { select: { waterKl: true, recycledWaterKl: true, month: true, year: true } },
+      waterData: dataCondition ? { ...dataCondition, select: { totalWaterConsumptionKl: true, recycledWaterKl: true, month: true, year: true } } : { select: { totalWaterConsumptionKl: true, recycledWaterKl: true, month: true, year: true } },
       fuelData: dataCondition ? { ...dataCondition, select: { dgDieselLitres: true, month: true, year: true } } : { select: { dgDieselLitres: true, month: true, year: true } },
       wasteData: dataCondition ? { ...dataCondition, select: { biomedicalWasteKg: true, recyclableWasteKg: true, landfillWasteKg: true, month: true, year: true } } : { select: { biomedicalWasteKg: true, recyclableWasteKg: true, landfillWasteKg: true, month: true, year: true } },
       refrigerantData: dataCondition ? { ...dataCondition, select: { refrigerantType: true, refrigerantLeakKg: true, month: true, year: true } } : { select: { refrigerantType: true, refrigerantLeakKg: true, month: true, year: true } },
@@ -129,10 +129,10 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
   /* WATER                           */
   /* =============================== */
 
-  const waterKl =
+  const totalWaterConsumptionKl =
     hospital.waterData.reduce(
       (acc, row) =>
-        acc + row.waterKl,
+        acc + row.totalWaterConsumptionKl,
       0
     );
 
@@ -240,7 +240,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
   const waterRecyclingPercentage =
     calculateWaterRecyclingPercentage(
       recycledWaterKl,
-      waterKl
+      totalWaterConsumptionKl
     );
 
   const wasteDiversionPercentage =
@@ -261,7 +261,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
 
   const waterPerBed =
     calculateWaterPerBed(
-      waterKl,
+      totalWaterConsumptionKl,
       hospital.numberOfBeds
     );
 

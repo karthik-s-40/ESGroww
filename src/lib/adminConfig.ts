@@ -43,7 +43,7 @@ export async function getAdminCalculationFactors() {
       diesel: 2.68,
       ambulanceFuel: 2.68,
       wasteKg: 0.8,
-      waterKl: 0.5,
+      totalWaterConsumptionKl: 0.5,
       R410A: 2088,
       R32: 675,
       R134A: 1430,

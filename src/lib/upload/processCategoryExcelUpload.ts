@@ -183,6 +183,86 @@ function detectAbnormalSpikes(
   return warnings;
 }
 
+function normalizeHeaderToken(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const HEADER_ALIASES: Record<UploadCategoryPrisma, Record<string, string>> = {
+  Electricity: {
+    month: "Month",
+    year: "Year",
+    electricitykwh: "electricityKwh",
+    kwhconsumption: "electricityKwh",
+    cost: "electricityCost",
+    meterreading: "meterReading",
+    peakdemand: "peakDemand",
+    powerfactor: "powerFactor",
+    renewablekwh: "renewableKwh",
+  },
+  Water: {
+    month: "Month",
+    year: "Year",
+    municipalwater: "municipalWaterKl",
+    tankerwater: "tankerWaterKl",
+    borewellwater: "borewellWaterKl",
+    rainwaterharvested: "rainwaterHarvestedKl",
+    recycledwaterkl: "recycledWaterKl",
+    totalwaterconsumption: "totalWaterConsumptionKl",
+    cost: "waterCost",
+  },
+  Fuel: {
+    month: "Month",
+    year: "Year",
+    dgdiesellitres: "dgDieselLitres",
+    dgruntimehours: "dgRuntimeHours",
+    dieselcost: "dieselCost",
+    pngcngquantity: "pngCngQuantity",
+  },
+  Waste: {
+    month: "Month",
+    year: "Year",
+    wetwaste: "wetWasteKg",
+    drywaste: "dryWasteKg",
+    hazardouswaste: "hazardousWasteKg",
+    biomedicalwastekg: "biomedicalWasteKg",
+    ewaste: "eWasteKg",
+    constructionwaste: "constructionWasteKg",
+    recyclablewastekg: "recyclableWasteKg",
+    landfillwastekg: "landfillWasteKg",
+    authorizedvendordisposal: "authorizedVendorDisposalKg",
+  },
+  Refrigerants: {
+    month: "Month",
+    year: "Year",
+    refrigeranttype: "refrigerantType",
+    refrigerantleakkg: "refrigerantLeakKg",
+  },
+  Transport: {
+    month: "Month",
+    year: "Year",
+    ambulancefuellitres: "ambulanceFuelLitres",
+    staffcommutekm: "staffCommuteKm",
+    fleetfuelconsumption: "fleetFuelConsumption",
+    vehiclekilometers: "vehicleKilometers",
+    cargotonnage: "cargoTonnage",
+    tonnekilometers: "tonneKilometers",
+  },
+};
+
+function canonicalizeHeader(category: UploadCategoryPrisma, header: string) {
+  const raw = String(header ?? "").trim();
+  if (!raw) return raw;
+  const aliased = HEADER_ALIASES[category][normalizeHeaderToken(raw)];
+  return aliased ?? raw;
+}
+
+function normalizeRefrigerantMonth(value: unknown) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "Annual";
+  const normalized = normalizeMonth(raw);
+  return VALID_MONTHS.includes(normalized) ? normalized : raw;
+}
+
 // CHANGE 1 applied: removed BRD_MIN_MONTHS_PER_FILE check from validateRows
 function validateRows(
   rows: Record<string, unknown>[],
@@ -238,9 +318,10 @@ function validateRowsRefrigerants(rows: Record<string, unknown>[]): string | nul
   const keys = new Set<string>();
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const normalizedMonth = normalizeMonth(row.Month);
+    const rawMonth = String(row.Month ?? "").trim();
+    const normalizedMonth = rawMonth ? normalizeMonth(rawMonth) : "Annual";
     const year = parseYear(row.Year);
-    if (!VALID_MONTHS.includes(normalizedMonth)) {
+    if (rawMonth && !VALID_MONTHS.includes(normalizedMonth)) {
       return `Invalid month "${row.Month}" found in row ${i + 1}. Allowed values are Jan-Dec only.`;
     }
     if (Number.isNaN(year)) {
@@ -283,34 +364,109 @@ const CATEGORY_CONFIG: Record<UploadCategoryPrisma, CategoryConfig> = {
   Electricity: {
     prismaCategory: "Electricity",
     requiredColumns: ["Month", "Year"],
-    numericFields: ["electricityKwh", "renewableKwh"],
-    negativeFields: ["electricityKwh", "renewableKwh"],
-    spikeFields: ["electricityKwh", "renewableKwh"],
+    numericFields: [
+      "electricityCost",
+      "electricityKwh",
+      "meterReading",
+      "peakDemand",
+      "powerFactor",
+      "renewableKwh",
+    ],
+    negativeFields: [
+      "electricityCost",
+      "electricityKwh",
+      "meterReading",
+      "peakDemand",
+      "powerFactor",
+      "renewableKwh",
+    ],
+    spikeFields: [
+      "electricityCost",
+      "electricityKwh",
+      "meterReading",
+      "peakDemand",
+      "powerFactor",
+      "renewableKwh",
+    ],
   },
   Water: {
     prismaCategory: "Water",
     requiredColumns: ["Month", "Year"],
-    numericFields: ["waterKl", "recycledWaterKl"],
-    negativeFields: ["waterKl", "recycledWaterKl"],
-    spikeFields: ["waterKl", "recycledWaterKl"],
+    numericFields: [
+      "municipalWaterKl",
+      "tankerWaterKl",
+      "borewellWaterKl",
+      "rainwaterHarvestedKl",
+      "recycledWaterKl",
+      "totalWaterConsumptionKl",
+      "waterCost",
+    ],
+    negativeFields: [
+      "municipalWaterKl",
+      "tankerWaterKl",
+      "borewellWaterKl",
+      "rainwaterHarvestedKl",
+      "recycledWaterKl",
+      "totalWaterConsumptionKl",
+      "waterCost",
+    ],
+    spikeFields: [
+      "municipalWaterKl",
+      "tankerWaterKl",
+      "borewellWaterKl",
+      "rainwaterHarvestedKl",
+      "recycledWaterKl",
+      "totalWaterConsumptionKl",
+      "waterCost",
+    ],
   },
   Fuel: {
     prismaCategory: "Fuel",
     requiredColumns: ["Month", "Year"],
-    numericFields: ["dgDieselLitres"],
-    negativeFields: ["dgDieselLitres"],
-    spikeFields: ["dgDieselLitres"],
+    numericFields: ["dgDieselLitres", "dgRuntimeHours", "dieselCost", "pngCngQuantity"],
+    negativeFields: ["dgDieselLitres", "dgRuntimeHours", "dieselCost", "pngCngQuantity"],
+    spikeFields: ["dgDieselLitres", "dgRuntimeHours", "dieselCost", "pngCngQuantity"],
   },
   Waste: {
     prismaCategory: "Waste",
     requiredColumns: ["Month", "Year"],
-    numericFields: ["biomedicalWasteKg", "recyclableWasteKg", "landfillWasteKg"],
-    negativeFields: ["biomedicalWasteKg", "recyclableWasteKg", "landfillWasteKg"],
-    spikeFields: ["biomedicalWasteKg", "recyclableWasteKg", "landfillWasteKg"],
+    numericFields: [
+      "wetWasteKg",
+      "dryWasteKg",
+      "hazardousWasteKg",
+      "biomedicalWasteKg",
+      "eWasteKg",
+      "constructionWasteKg",
+      "recyclableWasteKg",
+      "landfillWasteKg",
+      "authorizedVendorDisposalKg",
+    ],
+    negativeFields: [
+      "wetWasteKg",
+      "dryWasteKg",
+      "hazardousWasteKg",
+      "biomedicalWasteKg",
+      "eWasteKg",
+      "constructionWasteKg",
+      "recyclableWasteKg",
+      "landfillWasteKg",
+      "authorizedVendorDisposalKg",
+    ],
+    spikeFields: [
+      "wetWasteKg",
+      "dryWasteKg",
+      "hazardousWasteKg",
+      "biomedicalWasteKg",
+      "eWasteKg",
+      "constructionWasteKg",
+      "recyclableWasteKg",
+      "landfillWasteKg",
+      "authorizedVendorDisposalKg",
+    ],
   },
   Refrigerants: {
     prismaCategory: "Refrigerants",
-    requiredColumns: ["Month", "Year", "refrigerantType"],
+    requiredColumns: ["Year", "refrigerantType"],
     numericFields: ["refrigerantLeakKg"],
     negativeFields: ["refrigerantLeakKg"],
     spikeFields: ["refrigerantLeakKg"],
@@ -318,9 +474,30 @@ const CATEGORY_CONFIG: Record<UploadCategoryPrisma, CategoryConfig> = {
   Transport: {
     prismaCategory: "Transport",
     requiredColumns: ["Month", "Year"],
-    numericFields: ["ambulanceFuelLitres", "staffCommuteKm"],
-    negativeFields: ["ambulanceFuelLitres", "staffCommuteKm"],
-    spikeFields: ["ambulanceFuelLitres", "staffCommuteKm"],
+    numericFields: [
+      "ambulanceFuelLitres",
+      "staffCommuteKm",
+      "fleetFuelConsumption",
+      "vehicleKilometers",
+      "cargoTonnage",
+      "tonneKilometers",
+    ],
+    negativeFields: [
+      "ambulanceFuelLitres",
+      "staffCommuteKm",
+      "fleetFuelConsumption",
+      "vehicleKilometers",
+      "cargoTonnage",
+      "tonneKilometers",
+    ],
+    spikeFields: [
+      "ambulanceFuelLitres",
+      "staffCommuteKm",
+      "fleetFuelConsumption",
+      "vehicleKilometers",
+      "cargoTonnage",
+      "tonneKilometers",
+    ],
   },
 };
 
@@ -328,7 +505,7 @@ function rowToCanonical(
   category: UploadCategoryPrisma,
   row: Record<string, unknown>
 ): Record<string, string | number | boolean | null> {
-  const m = normalizeMonth(row.Month);
+  const m = category === "Refrigerants" ? normalizeRefrigerantMonth(row.Month) : normalizeMonth(row.Month);
   const y = parseYear(row.Year);
   const base: Record<string, string | number | boolean | null> = {
     month: m,
@@ -338,23 +515,44 @@ function rowToCanonical(
     case "Electricity":
       return {
         ...base,
+        electricityCost: parseNumericField(row.electricityCost),
         electricityKwh: parseNumericField(row.electricityKwh),
+        meterReading: parseNumericField(row.meterReading),
+        peakDemand: parseNumericField(row.peakDemand),
+        powerFactor: parseNumericField(row.powerFactor),
         renewableKwh: parseNumericField(row.renewableKwh),
       };
     case "Water":
       return {
         ...base,
-        waterKl: parseNumericField(row.waterKl),
+        municipalWaterKl: parseNumericField(row.municipalWaterKl),
+        tankerWaterKl: parseNumericField(row.tankerWaterKl),
+        borewellWaterKl: parseNumericField(row.borewellWaterKl),
+        rainwaterHarvestedKl: parseNumericField(row.rainwaterHarvestedKl),
         recycledWaterKl: parseNumericField(row.recycledWaterKl),
+        totalWaterConsumptionKl: parseNumericField(row.totalWaterConsumptionKl),
+        waterCost: parseNumericField(row.waterCost),
       };
     case "Fuel":
-      return { ...base, dgDieselLitres: parseNumericField(row.dgDieselLitres) };
+      return {
+        ...base,
+        dgDieselLitres: parseNumericField(row.dgDieselLitres),
+        dgRuntimeHours: parseNumericField(row.dgRuntimeHours),
+        dieselCost: parseNumericField(row.dieselCost),
+        pngCngQuantity: parseNumericField(row.pngCngQuantity),
+      };
     case "Waste":
       return {
         ...base,
+        wetWasteKg: parseNumericField(row.wetWasteKg),
+        dryWasteKg: parseNumericField(row.dryWasteKg),
+        hazardousWasteKg: parseNumericField(row.hazardousWasteKg),
         biomedicalWasteKg: parseNumericField(row.biomedicalWasteKg),
+        eWasteKg: parseNumericField(row.eWasteKg),
+        constructionWasteKg: parseNumericField(row.constructionWasteKg),
         recyclableWasteKg: parseNumericField(row.recyclableWasteKg),
         landfillWasteKg: parseNumericField(row.landfillWasteKg),
+        authorizedVendorDisposalKg: parseNumericField(row.authorizedVendorDisposalKg),
       };
     case "Refrigerants":
       return {
@@ -367,6 +565,10 @@ function rowToCanonical(
         ...base,
         ambulanceFuelLitres: parseNumericField(row.ambulanceFuelLitres),
         staffCommuteKm: parseNumericField(row.staffCommuteKm),
+        fleetFuelConsumption: parseNumericField(row.fleetFuelConsumption),
+        vehicleKilometers: parseNumericField(row.vehicleKilometers),
+        cargoTonnage: parseNumericField(row.cargoTonnage),
+        tonneKilometers: parseNumericField(row.tonneKilometers),
       };
     default:
       return base;
@@ -374,7 +576,7 @@ function rowToCanonical(
 }
 
 function rowKeyForCategory(category: UploadCategoryPrisma, row: Record<string, unknown>): string {
-  const m = normalizeMonth(row.Month);
+  const m = category === "Refrigerants" ? normalizeRefrigerantMonth(row.Month) : normalizeMonth(row.Month);
   const y = parseYear(row.Year);
   if (category === "Refrigerants") {
     return buildRefrigerantRowKey(y, m, String(row.refrigerantType ?? ""));
@@ -490,8 +692,8 @@ function buildComparisons(
   return list;
 }
 
-function parsedBaseFromRow(row: Record<string, unknown>): ParsedBaseRow {
-  const month = normalizeMonth(row.Month);
+function parsedBaseFromRow(row: Record<string, unknown>, fallbackMonth = "Jan"): ParsedBaseRow {
+  const month = normalizeMonth(row.Month) || fallbackMonth;
   const year = parseYear(row.Year);
   return {
     month,
@@ -574,10 +776,12 @@ export async function processCategoryExcelUpload(
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(bytes);
       const worksheet = workbook.worksheets[0];
-      const headerRow = worksheet.getRow(1);
-      const headers = (Array.isArray(headerRow.values) ? headerRow.values : []).slice(1).map((v: unknown) => String(v ?? "").trim());
+      const headerRow = worksheet.getRow(2);
+      const headers = (Array.isArray(headerRow.values) ? headerRow.values : [])
+        .slice(1)
+        .map((v: unknown) => canonicalizeHeader(category, String(v ?? "").trim()));
       rows = [];
-      for (let r = 2; r <= worksheet.rowCount; r++) {
+      for (let r = 4; r <= worksheet.rowCount; r++) {
         const excelRow = worksheet.getRow(r);
         // skip empty rows
         const allEmpty = (Array.isArray(excelRow.values) ? excelRow.values : []).every((v: unknown) => v === null || v === undefined || String(v).trim() === "");
@@ -909,9 +1113,21 @@ export async function processCategoryExcelUpload(
               await tx.electricityData.update({
                 where: { id: existingRow.id as string },
                 data: {
+                  electricityCost:
+                    Number(existingRow.electricityCost) +
+                    parseNumericField(row.electricityCost),
                   electricityKwh:
                     Number(existingRow.electricityKwh) +
                     parseNumericField(row.electricityKwh),
+                  meterReading:
+                    Number(existingRow.meterReading) +
+                    parseNumericField(row.meterReading),
+                  peakDemand:
+                    Number(existingRow.peakDemand) +
+                    parseNumericField(row.peakDemand),
+                  powerFactor:
+                    Number(existingRow.powerFactor) +
+                    parseNumericField(row.powerFactor),
                   renewableKwh:
                     Number(existingRow.renewableKwh) +
                     parseNumericField(row.renewableKwh),
@@ -921,11 +1137,26 @@ export async function processCategoryExcelUpload(
               await tx.waterData.update({
                 where: { id: existingRow.id as string },
                 data: {
-                  waterKl:
-                    Number(existingRow.waterKl) + parseNumericField(row.waterKl),
+                  municipalWaterKl:
+                    Number(existingRow.municipalWaterKl) +
+                    parseNumericField(row.municipalWaterKl),
+                  tankerWaterKl:
+                    Number(existingRow.tankerWaterKl) +
+                    parseNumericField(row.tankerWaterKl),
+                  borewellWaterKl:
+                    Number(existingRow.borewellWaterKl) +
+                    parseNumericField(row.borewellWaterKl),
+                  rainwaterHarvestedKl:
+                    Number(existingRow.rainwaterHarvestedKl) +
+                    parseNumericField(row.rainwaterHarvestedKl),
                   recycledWaterKl:
                     Number(existingRow.recycledWaterKl) +
                     parseNumericField(row.recycledWaterKl),
+                  totalWaterConsumptionKl:
+                    Number(existingRow.totalWaterConsumptionKl) +
+                    parseNumericField(row.totalWaterConsumptionKl),
+                  waterCost:
+                    Number(existingRow.waterCost) + parseNumericField(row.waterCost),
                 },
               });
             } else if (category === "Fuel") {
@@ -935,21 +1166,48 @@ export async function processCategoryExcelUpload(
                   dgDieselLitres:
                     Number(existingRow.dgDieselLitres) +
                     parseNumericField(row.dgDieselLitres),
+                  dgRuntimeHours:
+                    Number(existingRow.dgRuntimeHours) +
+                    parseNumericField(row.dgRuntimeHours),
+                  dieselCost:
+                    Number(existingRow.dieselCost) +
+                    parseNumericField(row.dieselCost),
+                  pngCngQuantity:
+                    Number(existingRow.pngCngQuantity) +
+                    parseNumericField(row.pngCngQuantity),
                 },
               });
             } else if (category === "Waste") {
               await tx.wasteData.update({
                 where: { id: existingRow.id as string },
                 data: {
+                  wetWasteKg:
+                    Number(existingRow.wetWasteKg) +
+                    parseNumericField(row.wetWasteKg),
+                  dryWasteKg:
+                    Number(existingRow.dryWasteKg) +
+                    parseNumericField(row.dryWasteKg),
+                  hazardousWasteKg:
+                    Number(existingRow.hazardousWasteKg) +
+                    parseNumericField(row.hazardousWasteKg),
                   biomedicalWasteKg:
                     Number(existingRow.biomedicalWasteKg) +
                     parseNumericField(row.biomedicalWasteKg),
+                  eWasteKg:
+                    Number(existingRow.eWasteKg) +
+                    parseNumericField(row.eWasteKg),
+                  constructionWasteKg:
+                    Number(existingRow.constructionWasteKg) +
+                    parseNumericField(row.constructionWasteKg),
                   recyclableWasteKg:
                     Number(existingRow.recyclableWasteKg) +
                     parseNumericField(row.recyclableWasteKg),
                   landfillWasteKg:
                     Number(existingRow.landfillWasteKg) +
                     parseNumericField(row.landfillWasteKg),
+                  authorizedVendorDisposalKg:
+                    Number(existingRow.authorizedVendorDisposalKg) +
+                    parseNumericField(row.authorizedVendorDisposalKg),
                 },
               });
             } else if (category === "Transport") {
@@ -962,6 +1220,18 @@ export async function processCategoryExcelUpload(
                   staffCommuteKm:
                     Number(existingRow.staffCommuteKm) +
                     parseNumericField(row.staffCommuteKm),
+                  fleetFuelConsumption:
+                    Number(existingRow.fleetFuelConsumption) +
+                    parseNumericField(row.fleetFuelConsumption),
+                  vehicleKilometers:
+                    Number(existingRow.vehicleKilometers) +
+                    parseNumericField(row.vehicleKilometers),
+                  cargoTonnage:
+                    Number(existingRow.cargoTonnage) +
+                    parseNumericField(row.cargoTonnage),
+                  tonneKilometers:
+                    Number(existingRow.tonneKilometers) +
+                    parseNumericField(row.tonneKilometers),
                 },
               });
             } else if (category === "Refrigerants") {
@@ -996,7 +1266,7 @@ export async function processCategoryExcelUpload(
       for (const row of rows) {
         const key = rowKeyForCategory(category, row);
         if (!keysToInsert.has(key)) continue;
-        const pb = parsedBaseFromRow(row);
+        const pb = category === "Refrigerants" ? parsedBaseFromRow(row, "Annual") : parsedBaseFromRow(row);
         if (category === "Electricity") {
           await tx.electricityData.create({
             data: {
@@ -1004,7 +1274,11 @@ export async function processCategoryExcelUpload(
               assessmentCycleId,
               month: pb.month,
               year: pb.year,
+              electricityCost: parseNumericField(row.electricityCost),
               electricityKwh: parseNumericField(row.electricityKwh),
+              meterReading: parseNumericField(row.meterReading),
+              peakDemand: parseNumericField(row.peakDemand),
+              powerFactor: parseNumericField(row.powerFactor),
               renewableKwh: parseNumericField(row.renewableKwh),
               sourceBatchId: batch.id,
             },
@@ -1017,8 +1291,13 @@ export async function processCategoryExcelUpload(
               assessmentCycleId,
               month: pb.month,
               year: pb.year,
-              waterKl: parseNumericField(row.waterKl),
+              municipalWaterKl: parseNumericField(row.municipalWaterKl),
+              tankerWaterKl: parseNumericField(row.tankerWaterKl),
+              borewellWaterKl: parseNumericField(row.borewellWaterKl),
+              rainwaterHarvestedKl: parseNumericField(row.rainwaterHarvestedKl),
               recycledWaterKl: parseNumericField(row.recycledWaterKl),
+              totalWaterConsumptionKl: parseNumericField(row.totalWaterConsumptionKl),
+              waterCost: parseNumericField(row.waterCost),
               sourceBatchId: batch.id,
             },
           });
@@ -1031,6 +1310,9 @@ export async function processCategoryExcelUpload(
               month: pb.month,
               year: pb.year,
               dgDieselLitres: parseNumericField(row.dgDieselLitres),
+              dgRuntimeHours: parseNumericField(row.dgRuntimeHours),
+              dieselCost: parseNumericField(row.dieselCost),
+              pngCngQuantity: parseNumericField(row.pngCngQuantity),
               sourceBatchId: batch.id,
             },
           });
@@ -1042,9 +1324,15 @@ export async function processCategoryExcelUpload(
               assessmentCycleId,
               month: pb.month,
               year: pb.year,
+              wetWasteKg: parseNumericField(row.wetWasteKg),
+              dryWasteKg: parseNumericField(row.dryWasteKg),
+              hazardousWasteKg: parseNumericField(row.hazardousWasteKg),
               biomedicalWasteKg: parseNumericField(row.biomedicalWasteKg),
+              eWasteKg: parseNumericField(row.eWasteKg),
+              constructionWasteKg: parseNumericField(row.constructionWasteKg),
               recyclableWasteKg: parseNumericField(row.recyclableWasteKg),
               landfillWasteKg: parseNumericField(row.landfillWasteKg),
+              authorizedVendorDisposalKg: parseNumericField(row.authorizedVendorDisposalKg),
               sourceBatchId: batch.id,
             },
           });
@@ -1058,6 +1346,10 @@ export async function processCategoryExcelUpload(
               year: pb.year,
               ambulanceFuelLitres: parseNumericField(row.ambulanceFuelLitres),
               staffCommuteKm: parseNumericField(row.staffCommuteKm),
+              fleetFuelConsumption: parseNumericField(row.fleetFuelConsumption),
+              vehicleKilometers: parseNumericField(row.vehicleKilometers),
+              cargoTonnage: parseNumericField(row.cargoTonnage),
+              tonneKilometers: parseNumericField(row.tonneKilometers),
               sourceBatchId: batch.id,
             },
           });
@@ -1082,7 +1374,11 @@ export async function processCategoryExcelUpload(
       const distinctCal = distinctCalendarMonthsFromMap(refreshed);
 
       const firstRow = rows[0];
-      const anchor = firstRow ? parsedBaseFromRow(firstRow) : { month: "Jan", year: 2020, monthKey: "2020|Jan" };
+      const anchor = firstRow
+        ? category === "Refrigerants"
+          ? parsedBaseFromRow(firstRow, "Annual")
+          : parsedBaseFromRow(firstRow)
+        : { month: "Jan", year: 2020, monthKey: "2020|Jan" };
 
       await tx.upload.create({
         data: {

@@ -129,10 +129,8 @@ export default function HomePage() {
       className="min-h-screen w-full"
       style={{ background: "#FBFBF3" }}
     >
-      {/* Lexend font import & animations */}
+      {/* Page animations */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap');
-        * { font-family: 'Lexend', sans-serif; }
         .fade-section { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
         .fade-section.opacity-100 { opacity: 1; transform: translateY(0); }
         @keyframes shimmer { 0%,100% { opacity:0.6 } 50% { opacity:1 } }

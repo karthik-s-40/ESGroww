@@ -67,7 +67,7 @@ describe("esgCalculations", () => {
       expect(calculateRefrigerantEmissions("R410A", 2)).toBe(4176);
       expect(calculateRefrigerantEmissions("UNKNOWN", 2)).toBe(0);
       expect(calculateWasteEmissions(100, { emission: { wastekg: 0.8 } })).toBe(80);
-      expect(calculateWaterEmissions(100, { emission: { waterkl: 0.5 } })).toBe(50);
+      expect(calculateWaterEmissions(100, { emission: { totalwaterconsumptionkl: 0.5 } })).toBe(50);
       expect(calculateRenewablePercentage(40, 80)).toBe(50);
       expect(calculateRenewablePercentage(10, 0)).toBe(0);
       expect(calculateWaterRecyclingPercentage(25, 50)).toBe(50);

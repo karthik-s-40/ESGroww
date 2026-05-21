@@ -45,11 +45,13 @@ export function calculateWasteEmissions(
 }
 
 export function calculateWaterEmissions(
-  totalWaterKl: number,
+  totalWaterConsumptionKl: number,
   config: ESGConfiguration
 ) {
-  const factor = config.emissionFactors["waterkl"] ?? config.defaultFactors.waterKl;
-  return totalWaterKl * factor;
+  const factor =
+    config.emissionFactors["totalwaterconsumptionkl"] ??
+    config.defaultFactors.totalWaterConsumptionKl;
+  return totalWaterConsumptionKl * factor;
 }
 
 export function calculateRenewablePercentage(
@@ -62,10 +64,10 @@ export function calculateRenewablePercentage(
 
 export function calculateWaterRecyclingPercentage(
   recycledWaterKl: number,
-  totalWaterKl: number
+  totalWaterConsumptionKl: number
 ) {
-  if (totalWaterKl === 0) return 0;
-  return Math.min((recycledWaterKl / totalWaterKl) * 100, 100);
+  if (totalWaterConsumptionKl === 0) return 0;
+  return Math.min((recycledWaterKl / totalWaterConsumptionKl) * 100, 100);
 }
 
 export function calculateWasteDiversionPercentage(

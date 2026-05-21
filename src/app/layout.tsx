@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="flex h-full flex-col bg-background font-sans text-foreground">
+      <body className={`${inter.className} flex h-full flex-col bg-background text-foreground`}>
         <AppChrome>{children}</AppChrome>
         <ConditionalChatbot />
       </body>

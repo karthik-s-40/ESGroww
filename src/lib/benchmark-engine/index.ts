@@ -9,11 +9,11 @@ export function calculateEnergyPerBed(
 }
 
 export function calculateWaterPerBed(
-  waterKl: number,
+  totalWaterConsumptionKl: number,
   numberOfBeds: number
 ) {
   if (numberOfBeds === 0) return 0;
-  return waterKl / numberOfBeds;
+  return totalWaterConsumptionKl / numberOfBeds;
 }
 
 export function calculateWastePerBed(
