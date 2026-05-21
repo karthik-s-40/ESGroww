@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { AppError, ERROR_MESSAGES } from "@/lib/errors";
-import { getAdminCalculationFactors } from "@/lib/adminConfig";
+import { getESGConfiguration } from "@/lib/config-engine";
 
 import {
   calculateScope2Emissions,
@@ -54,7 +54,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
     throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
   }
 
-  const { factors } = await getAdminCalculationFactors();
+  const config = await getESGConfiguration();
 
   /* =============================== */
   /* MINIMUM DATA REQUIREMENT        */
@@ -194,19 +194,19 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
   const scope2Emissions =
     calculateScope2Emissions(
       electricityKwh,
-      factors
+      config
     );
 
   const dieselEmissions =
     calculateDieselEmissions(
       dgDieselLitres,
-      factors
+      config
     );
 
   const transportEmissions =
     calculateTransportEmissions(
       ambulanceFuelLitres,
-      factors
+      config
     );
 
   let refrigerantEmissions = 0;
@@ -216,7 +216,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
       calculateRefrigerantEmissions(
         row.refrigerantType,
         row.refrigerantLeakKg,
-        factors
+        config
       );
   }
 
@@ -310,7 +310,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
           ?.hasAuditReports || false,
 
       coverageRatio: averageCoverageRatio,
-    });
+    }, config);
 
   /* =============================== */
   /* BENCHMARK SCORES                */
@@ -329,7 +329,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
           : 0,
       waterPerBed,
       wastePerBed,
-    });
+    }, config);
 
   /* =============================== */
   /* CERTIFICATION READINESS         */
@@ -344,7 +344,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
       completeness: Math.round(averageCoverageRatio * 100),
       confidence: calculateConfidenceScore(Math.round(averageCoverageRatio * 12)),
       benchmarkScores,
-    });
+    }, config);
 
   /* =============================== */
   /* GAP ANALYSIS                    */

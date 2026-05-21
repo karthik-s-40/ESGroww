@@ -4,16 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useMemo } from "react";
 import type { KPIBenchmark } from "@/lib/kpiUtils";
 import type { DownloadReportData } from "@/components/shared/DownloadReportButton";
-import {
-  evaluateDGDependency,
-  evaluateEnergyIntensity,
-  evaluateRecyclingRate,
-  evaluateRenewableEnergy,
-  evaluateTankerWaterDependency,
-  evaluateWaterIntensity,
-  evaluateWaterReuse,
-  evaluateWasteSegregation,
-} from "@/lib/kpiUtils";
+
 import {
   A4_PORTRAIT_CSS_PX,
   PDF_CONTENT_INSET_PX,
@@ -253,21 +244,31 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
     minute: "2-digit",
   });
 
+  const evalKpis = data.evaluatedKpis || {
+    energyIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    waterIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    recyclingRate: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    wasteSegregation: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    renewableEnergy: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    tankerDependency: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    waterReuse: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    powerFactor: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    dgDependency: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+  } as Record<string, KPIBenchmark>;
+
   const kpiRows = useMemo(() => {
-    const intensityEl = annEl > 0 && sqft > 0 ? annEl / sqft : null;
-    const intensityWa = annWa > 0 && sqft > 0 ? annWa / sqft : null;
     const items = [
-      { title: "Energy intensity", unit: "kWh/sqft/yr", icon: "⚡", kpi: evaluateEnergyIntensity(intensityEl) },
-      { title: "Water intensity", unit: "KL/sqft/yr", icon: "💧", kpi: evaluateWaterIntensity(intensityWa) },
-      { title: "Renewable energy", unit: "%", icon: "☀️", kpi: evaluateRenewableEnergy(renPct) },
-      { title: "Water reuse", unit: "%", icon: "🔄", kpi: evaluateWaterReuse(wRePct) },
-      { title: "Recycling rate", unit: "%", icon: "♻️", kpi: evaluateRecyclingRate(wsePct) },
-      { title: "Waste segregation", unit: "%", icon: "🗑️", kpi: evaluateWasteSegregation(wsePct) },
-      { title: "Tanker dependency", unit: "%", icon: "🚛", kpi: evaluateTankerWaterDependency(0) },
-      { title: "DG dependency", unit: "%", icon: "🛢️", kpi: evaluateDGDependency(0) },
+      { title: "Energy intensity", unit: "kWh/sqft/yr", icon: "⚡", kpi: evalKpis.energyIntensity },
+      { title: "Water intensity", unit: "KL/sqft/yr", icon: "💧", kpi: evalKpis.waterIntensity },
+      { title: "Renewable energy", unit: "%", icon: "☀️", kpi: evalKpis.renewableEnergy },
+      { title: "Water reuse", unit: "%", icon: "🔄", kpi: evalKpis.waterReuse },
+      { title: "Recycling rate", unit: "%", icon: "♻️", kpi: evalKpis.recyclingRate },
+      { title: "Waste segregation", unit: "%", icon: "🗑️", kpi: evalKpis.wasteSegregation },
+      { title: "Tanker dependency", unit: "%", icon: "🚛", kpi: evalKpis.tankerDependency },
+      { title: "DG dependency", unit: "%", icon: "🛢️", kpi: evalKpis.dgDependency },
     ];
     return items;
-  }, [annEl, annWa, sqft, renPct, wRePct, wsePct]);
+  }, [evalKpis]);
 
   const recommendations = useMemo(() => {
     const out: string[] = [];

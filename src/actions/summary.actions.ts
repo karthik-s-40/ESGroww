@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { AppError, ERROR_MESSAGES } from "@/lib/errors";
-import { getAdminCalculationFactors } from "@/lib/adminConfig";
+import { getESGConfiguration } from "@/lib/config-engine";
 import {
   annualizeElectricity,
   annualizeFuel,
@@ -54,7 +54,7 @@ if (!hospital) {
   throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
 }
 
-  const { factors } = await getAdminCalculationFactors();
+  const config = await getESGConfiguration();
 
   /* ===================================== */
   /* MONTH COVERAGE                        */
@@ -181,7 +181,7 @@ if (!hospital) {
         calculateRefrigerantEmissions(
           item.refrigerantType,
           item.refrigerantLeakKg,
-          factors
+          config
         ),
       0
     );
@@ -256,19 +256,19 @@ if (!hospital) {
   const electricityEmissions =
     calculateScope2Emissions(
       annualizedElectricity,
-      factors
+      config
     );
 
   const dieselEmissions =
     calculateDieselEmissions(
       annualizedDiesel,
-      factors
+      config
     );
 
   const transportEmissions =
     calculateTransportEmissions(
       annualizedTransportFuel,
-      factors
+      config
     );
 
   const refrigerantEmissions =

@@ -89,6 +89,42 @@ export default function SystemConfigPage() {
     }
   }
 
+  async function create(
+    type: "benchmark" | "emissionFactor" | "confidence" | "applicability",
+    data: Record<string, unknown>
+  ) {
+    try {
+      const res = await fetch("/api/admin/system-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, data }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Create failed");
+      await load();
+    } catch (e) {
+      console.error(e);
+      window.alert("Failed to create new item");
+    }
+  }
+
+  async function seedDefaults() {
+    if (!window.confirm("This will seed the database with default configurations. Continue?")) return;
+    try {
+      const res = await fetch("/api/admin/system-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "seed", data: {} }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Seed failed");
+      await load();
+    } catch (e) {
+      console.error(e);
+      window.alert("Failed to seed data");
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
@@ -103,13 +139,20 @@ export default function SystemConfigPage() {
 
   return (
     <div className="space-y-8 pb-12">
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#3d5248]/80">Master data</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#15221a]">ESG Engine Configuration Center</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#3d5248]">
-          Edit benchmarks, emission factors, confidence bands, and certification applicability. Changes persist to
-          PostgreSQL and append AdminAuditLog entries for compliance traceability.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#3d5248]/80">Master data</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#15221a]">ESG Engine Configuration Center</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#3d5248]">
+            Edit benchmarks, emission factors, confidence bands, and certification applicability. Changes persist to
+            PostgreSQL and append AdminAuditLog entries for compliance traceability.
+          </p>
+        </div>
+        {data.emissionFactors.length === 0 && data.benchmarks.length === 0 && (
+          <Button onClick={seedDefaults} variant="default" className="bg-[#00673F] text-white">
+            Seed Default Configurations
+          </Button>
+        )}
       </div>
 
       <div className={adminGlassCard()}>
@@ -145,7 +188,10 @@ export default function SystemConfigPage() {
             title="BenchmarkMaster"
             description="Efficient and acceptable bands drive benchmarkStatus in CalculatedMetric."
           />
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Button onClick={() => create("benchmark", {})} size="sm" variant="outline" className="h-8">
+              + Add New Benchmark
+            </Button>
             <ExportCsvButton
               filename="esgroww-benchmarks.csv"
               rows={data.benchmarks as unknown as Record<string, unknown>[]}
@@ -168,7 +214,10 @@ export default function SystemConfigPage() {
 
         <TabsContent value="factors" className="mt-4 space-y-3">
           <AdminSectionTitle eyebrow="Inventory" title="EmissionFactor" />
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Button onClick={() => create("emissionFactor", {})} size="sm" variant="outline" className="h-8">
+              + Add Emission Factor
+            </Button>
             <ExportCsvButton
               filename="esgroww-emission-factors.csv"
               rows={data.emissionFactors as unknown as Record<string, unknown>[]}
@@ -188,6 +237,11 @@ export default function SystemConfigPage() {
 
         <TabsContent value="confidence" className="mt-4 space-y-3">
           <AdminSectionTitle eyebrow="Quality" title="ConfidenceThreshold" />
+          <div className="flex justify-start">
+            <Button onClick={() => create("confidence", {})} size="sm" variant="outline" className="h-8">
+              + Add Confidence Threshold
+            </Button>
+          </div>
           {data.confidenceThresholds.map((c) => (
             <ConfidenceEditor key={c.id} row={c} disabled={savingId === c.id} onSave={(p) => patch("confidence", c.id, p)} />
           ))}
@@ -195,6 +249,11 @@ export default function SystemConfigPage() {
 
         <TabsContent value="applicability" className="mt-4 space-y-3">
           <AdminSectionTitle eyebrow="Pathways" title="CertificationApplicability" />
+          <div className="flex justify-start">
+            <Button onClick={() => create("applicability", {})} size="sm" variant="outline" className="h-8">
+              + Add Applicability
+            </Button>
+          </div>
           {data.certificationApplicability.map((a) => (
             <ApplicabilityEditor
               key={a.id}
@@ -227,12 +286,12 @@ function BenchmarkEditor({
   return (
     <div className={adminGlassCard("gap-3")}>
       <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
-        <Input className="h-8 text-xs" value={sectorCode} onChange={(e) => setSectorCode(e.target.value)} />
-        <Input className="h-8 text-xs md:col-span-2" value={metricName} onChange={(e) => setMetricName(e.target.value)} />
-        <Input className="h-8 text-xs" value={efficientMax} onChange={(e) => setEfficientMax(e.target.value)} />
-        <Input className="h-8 text-xs" value={acceptableMin} onChange={(e) => setAcceptableMin(e.target.value)} />
-        <Input className="h-8 text-xs" value={acceptableMax} onChange={(e) => setAcceptableMax(e.target.value)} />
-        <Input className="h-8 text-xs" value={unit} onChange={(e) => setUnit(e.target.value)} />
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Sector Code</label><Input placeholder="Sector (e.g. HOSP)" className="h-8 text-xs" value={sectorCode} onChange={(e) => setSectorCode(e.target.value)} /></div>
+        <div className="flex flex-col gap-1 md:col-span-2"><label className="text-[10px] font-medium text-[#3d5248]">Metric Name</label><Input placeholder="Metric Name" className="h-8 text-xs" value={metricName} onChange={(e) => setMetricName(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Efficient Max</label><Input placeholder="Efficient Max" className="h-8 text-xs" value={efficientMax} onChange={(e) => setEfficientMax(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Acceptable Min</label><Input placeholder="Acceptable Min" className="h-8 text-xs" value={acceptableMin} onChange={(e) => setAcceptableMin(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Acceptable Max</label><Input placeholder="Acceptable Max" className="h-8 text-xs" value={acceptableMax} onChange={(e) => setAcceptableMax(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Unit</label><Input placeholder="Unit" className="h-8 text-xs" value={unit} onChange={(e) => setUnit(e.target.value)} /></div>
       </div>
       <div className="flex justify-end">
         <Button
@@ -274,10 +333,10 @@ function FactorEditor({
   return (
     <div className={adminGlassCard("gap-3")}>
       <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
-        <Input className="h-8 text-xs" value={sourceType} onChange={(e) => setSourceType(e.target.value)} />
-        <Input className="h-8 text-xs" value={region} onChange={(e) => setRegion(e.target.value)} />
-        <Input className="h-8 text-xs" value={factorValue} onChange={(e) => setFactorValue(e.target.value)} />
-        <Input className="h-8 text-xs" value={unit} onChange={(e) => setUnit(e.target.value)} />
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Source Type</label><Input placeholder="Source (e.g. electricity)" className="h-8 text-xs" value={sourceType} onChange={(e) => setSourceType(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Region</label><Input placeholder="Region" className="h-8 text-xs" value={region} onChange={(e) => setRegion(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Factor Value</label><Input placeholder="Factor Value" className="h-8 text-xs" value={factorValue} onChange={(e) => setFactorValue(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Unit</label><Input placeholder="Unit" className="h-8 text-xs" value={unit} onChange={(e) => setUnit(e.target.value)} /></div>
         <label className="flex items-center gap-2 text-xs text-[#3d5248]">
           <input type="checkbox" checked={overrideAllowed} onChange={(e) => setOverrideAllowed(e.target.checked)} />
           Override allowed
@@ -321,10 +380,10 @@ function ConfidenceEditor({
   return (
     <div className={adminGlassCard("gap-3")}>
       <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-        <Input className="h-8 text-xs" value={monthsMin} onChange={(e) => setMonthsMin(e.target.value)} />
-        <Input className="h-8 text-xs" value={monthsMax} onChange={(e) => setMonthsMax(e.target.value)} />
-        <Input className="h-8 text-xs" value={modifier} onChange={(e) => setModifier(e.target.value)} />
-        <Input className="h-8 text-xs" value={confidenceLabel} onChange={(e) => setConfidenceLabel(e.target.value)} />
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Months Min</label><Input placeholder="Months Min" className="h-8 text-xs" value={monthsMin} onChange={(e) => setMonthsMin(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Months Max</label><Input placeholder="Months Max" className="h-8 text-xs" value={monthsMax} onChange={(e) => setMonthsMax(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Modifier</label><Input placeholder="Modifier" className="h-8 text-xs" value={modifier} onChange={(e) => setModifier(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Confidence Label</label><Input placeholder="Label (e.g. High)" className="h-8 text-xs" value={confidenceLabel} onChange={(e) => setConfidenceLabel(e.target.value)} /></div>
       </div>
       <div className="flex justify-end">
         <Button
@@ -362,9 +421,9 @@ function ApplicabilityEditor({
   return (
     <div className={adminGlassCard("gap-3")}>
       <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-        <Input className="h-8 text-xs" value={sectorCode} onChange={(e) => setSectorCode(e.target.value)} />
-        <Input className="h-8 text-xs" value={certificationName} onChange={(e) => setCertificationName(e.target.value)} />
-        <Input className="h-8 text-xs" value={importanceLevel} onChange={(e) => setImportanceLevel(e.target.value)} />
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Sector Code</label><Input placeholder="Sector Code" className="h-8 text-xs" value={sectorCode} onChange={(e) => setSectorCode(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Certification Name</label><Input placeholder="Certification Name" className="h-8 text-xs" value={certificationName} onChange={(e) => setCertificationName(e.target.value)} /></div>
+        <div className="flex flex-col gap-1"><label className="text-[10px] font-medium text-[#3d5248]">Importance Level</label><Input placeholder="Importance Level" className="h-8 text-xs" value={importanceLevel} onChange={(e) => setImportanceLevel(e.target.value)} /></div>
       </div>
       <div className="flex justify-end">
         <Button

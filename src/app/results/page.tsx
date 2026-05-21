@@ -4,17 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DownloadReportButton } from "@/components/shared/DownloadReportButton";
 import { ReportPdfCapture } from "@/components/pdf/ReportPdfCapture";
 import { Link2, Mail, Phone } from "lucide-react";
-import {
-  evaluateEnergyIntensity,
-  evaluateWaterIntensity,
-  evaluateRecyclingRate,
-  evaluateRenewableEnergy,
-  evaluatePowerFactor,
-  evaluateDGDependency,
-  evaluateWaterReuse,
-  evaluateTankerWaterDependency,
-  evaluateWasteSegregation,
-} from "@/lib/kpiUtils";
+import { type KPIBenchmark } from "@/lib/kpiUtils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AssessmentData {
@@ -36,6 +26,7 @@ interface AssessmentData {
   builtUpArea?: number;
   orgBuiltUpArea?: number;
   percentages?: { renewableEnergy?: number; waterRecycling?: number; wasteRecycling?: number };
+  evaluatedKpis?: Record<string, KPIBenchmark>;
 }
  
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -214,16 +205,28 @@ export default function ResultsPage() {
   const wRePct  = data.percentages?.waterRecycling   ?? 0;
   const wsePct  = data.percentages?.wasteRecycling   ?? 0;
 
+  const evalKpis = data.evaluatedKpis || {
+    energyIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    waterIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    recyclingRate: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    wasteSegregation: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    renewableEnergy: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    tankerDependency: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    waterReuse: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    powerFactor: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+    dgDependency: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
+  } as Record<string, KPIBenchmark>;
+
   const kpiItems = [
-    { title: "Energy Intensity",    kpi: evaluateEnergyIntensity(annEl  > 0 && sqft > 0 ? annEl / sqft : null),   unit: "kWh/sqft/yr", icon: "⚡" },
-    { title: "Water Intensity",     kpi: evaluateWaterIntensity(annWa   > 0 && sqft > 0 ? annWa / sqft : null),   unit: "KL/sqft/yr", icon: "💧" },
-    { title: "Renewable Energy",    kpi: evaluateRenewableEnergy(renPct),     unit: "%", icon: "☀️" },
-    { title: "Water Reuse",         kpi: evaluateWaterReuse(wRePct),          unit: "%", icon: "🔄" },
-    { title: "Recycling Rate",      kpi: evaluateRecyclingRate(wsePct),       unit: "%", icon: "♻️" },
-    { title: "Waste Segregation",   kpi: evaluateWasteSegregation(wsePct),    unit: "%", icon: "🗑️" },
-    { title: "Tanker Dependency",   kpi: evaluateTankerWaterDependency(0),    unit: "%", icon: "🚛" },
-    { title: "Power Factor",        kpi: evaluatePowerFactor(0.85),           unit: "", icon: "🔌" },
-    { title: "DG Dependency",       kpi: evaluateDGDependency(0),             unit: "%", icon: "🛢️" },
+    { title: "Energy Intensity",    kpi: evalKpis.energyIntensity,   unit: "kWh/sqft/yr", icon: "⚡" },
+    { title: "Water Intensity",     kpi: evalKpis.waterIntensity,   unit: "KL/sqft/yr", icon: "💧" },
+    { title: "Renewable Energy",    kpi: evalKpis.renewableEnergy,     unit: "%", icon: "☀️" },
+    { title: "Water Reuse",         kpi: evalKpis.waterReuse,          unit: "%", icon: "🔄" },
+    { title: "Recycling Rate",      kpi: evalKpis.recyclingRate,       unit: "%", icon: "♻️" },
+    { title: "Waste Segregation",   kpi: evalKpis.wasteSegregation,    unit: "%", icon: "🗑️" },
+    { title: "Tanker Dependency",   kpi: evalKpis.tankerDependency,    unit: "%", icon: "🚛" },
+    { title: "Power Factor",        kpi: evalKpis.powerFactor,           unit: "", icon: "🔌" },
+    { title: "DG Dependency",       kpi: evalKpis.dgDependency,             unit: "%", icon: "🛢️" },
   ];
  
   const glassCardClass = "bg-white/70 backdrop-blur-md border-white/20 shadow-xl";
