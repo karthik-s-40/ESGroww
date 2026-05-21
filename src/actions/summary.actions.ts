@@ -55,7 +55,7 @@ export async function getSummaryData(assessmentCycleId?: string) {
       throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
     }
 
-    const { factors } = await getAdminCalculationFactors();
+    const config = await getESGConfiguration();
 
   /* ===================================== */
   /* MONTH COVERAGE                        */

@@ -2,7 +2,7 @@
  
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { getAdminCalculationFactors } from "@/lib/adminConfig";
+import { getESGConfiguration } from "@/lib/config-engine";
 import { AppError, ERROR_MESSAGES } from "@/lib/errors";
  
 import {
@@ -84,7 +84,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404, "HOSPITAL_NOT_FOUND");
     }
  
-    const { factors } = await getAdminCalculationFactors();
+    const config = await getESGConfiguration();
  
   // ─────────────────────────────────────────────
   // FETCH DATA

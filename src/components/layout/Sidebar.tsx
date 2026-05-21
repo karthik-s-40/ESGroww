@@ -152,13 +152,11 @@ export function Sidebar({ isMobileOpen, setIsMobileOpen, isCollapsed, setIsColla
       <motion.aside
         initial={false}
         animate={{ 
-          width: isCollapsed ? 72 : 260,
-          x: typeof window !== "undefined" && window.innerWidth < 1024 
-             ? (isMobileOpen ? 0 : -260) 
-             : 0 
+          width: isCollapsed ? 72 : 260
         }}
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r border-border bg-white shadow-sm lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out"
+          "fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r border-border bg-white shadow-sm transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">

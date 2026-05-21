@@ -55,8 +55,7 @@ export async function fetchDashboardIntelligence(assessmentCycleId?: string) {
       throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
     }
 
-    const { factors } = await getAdminCalculationFactors();
-  const config = await getESGConfiguration();
+    const config = await getESGConfiguration();
 
   /* =============================== */
   /* MINIMUM DATA REQUIREMENT        */
