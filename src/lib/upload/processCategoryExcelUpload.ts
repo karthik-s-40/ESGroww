@@ -384,47 +384,48 @@ function rowKeyForCategory(category: UploadCategoryPrisma, row: Record<string, u
 
 async function loadExistingMap(
   category: UploadCategoryPrisma,
-  hospitalId: string
+  hospitalId: string,
+  assessmentCycleId: string
 ): Promise<Map<string, Record<string, unknown>>> {
   const map = new Map<string, Record<string, unknown>>();
   switch (category) {
     case "Electricity": {
-      const rows = await prisma.electricityData.findMany({ where: { hospitalId } });
+      const rows = await prisma.electricityData.findMany({ where: { hospitalId, assessmentCycleId } });
       for (const r of rows) {
         map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
       }
       break;
     }
     case "Water": {
-      const rows = await prisma.waterData.findMany({ where: { hospitalId } });
+      const rows = await prisma.waterData.findMany({ where: { hospitalId, assessmentCycleId } });
       for (const r of rows) {
         map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
       }
       break;
     }
     case "Fuel": {
-      const rows = await prisma.fuelData.findMany({ where: { hospitalId } });
+      const rows = await prisma.fuelData.findMany({ where: { hospitalId, assessmentCycleId } });
       for (const r of rows) {
         map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
       }
       break;
     }
     case "Waste": {
-      const rows = await prisma.wasteData.findMany({ where: { hospitalId } });
+      const rows = await prisma.wasteData.findMany({ where: { hospitalId, assessmentCycleId } });
       for (const r of rows) {
         map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
       }
       break;
     }
     case "Transport": {
-      const rows = await prisma.transportData.findMany({ where: { hospitalId } });
+      const rows = await prisma.transportData.findMany({ where: { hospitalId, assessmentCycleId } });
       for (const r of rows) {
         map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
       }
       break;
     }
     case "Refrigerants": {
-      const rows = await prisma.refrigerantData.findMany({ where: { hospitalId } });
+      const rows = await prisma.refrigerantData.findMany({ where: { hospitalId, assessmentCycleId } });
       for (const r of rows) {
         map.set(buildRefrigerantRowKey(r.year, r.month, r.refrigerantType), { ...r });
       }
@@ -499,17 +500,17 @@ function parsedBaseFromRow(row: Record<string, unknown>): ParsedBaseRow {
   };
 }
 
-async function nextBatchVersion(hospitalId: string, category: string) {
+async function nextBatchVersion(hospitalId: string, category: string, assessmentCycleId: string) {
   const agg = await prisma.dataUploadBatch.aggregate({
-    where: { hospitalId, category },
+    where: { hospitalId, category, assessmentCycleId },
     _max: { batchVersion: true },
   });
   return (agg._max.batchVersion ?? 0) + 1;
 }
 
-async function latestBatchHash(hospitalId: string, category: string) {
+async function latestBatchHash(hospitalId: string, category: string, assessmentCycleId: string) {
   const b = await prisma.dataUploadBatch.findFirst({
-    where: { hospitalId, category },
+    where: { hospitalId, category, assessmentCycleId },
     orderBy: { createdAt: "desc" },
     select: { id: true, fileContentHash: true },
   });
@@ -534,17 +535,18 @@ function mergeStrategyRequiresIncomingFile(strategy?: UploadMergeStrategy) {
   return strategy !== "SKIP_DUPLICATE_DATASET" && strategy !== "FORCE_DUPLICATE_REAUDIT";
 }
 
-function orClauseFromCalendarKeys(keys: string[]) {
+function orClauseFromCalendarKeys(keys: string[], assessmentCycleId: string) {
   return keys
     .map((k) => parseCalendarMonthKey(k))
     .filter((p): p is { year: number; month: string } => p !== null)
-    .map((p) => ({ AND: [{ year: p.year }, { month: p.month }] }));
+    .map((p) => ({ AND: [{ year: p.year }, { month: p.month }, { assessmentCycleId }] }));
 }
 
 export async function processCategoryExcelUpload(
   category: UploadCategoryPrisma,
   hospitalId: string,
-  formData: FormData
+  formData: FormData,
+  assessmentCycleId: string
 ): Promise<ExcelUploadActionResult> {
   const cfg = CATEGORY_CONFIG[category];
   const mergeStrategy = parseMergeStrategy(formData.get("mergeStrategy"));
@@ -608,7 +610,7 @@ export async function processCategoryExcelUpload(
       return { success: false, code: "VALIDATION", error: "Could not compute file fingerprint." };
     }
 
-    const existing = await loadExistingMap(category, hospitalId);
+    const existing = await loadExistingMap(category, hospitalId, assessmentCycleId);
     const existingCalendarKeys = new Set<string>();
     for (const k of existing.keys()) {
       const r = parseRefrigerantRowKey(k);
@@ -629,7 +631,7 @@ export async function processCategoryExcelUpload(
       ? []
       : incomingKeys.filter((k) => !existing.has(k));
 
-    const latest = await latestBatchHash(hospitalId, category);
+    const latest = await latestBatchHash(hospitalId, category, assessmentCycleId);
     const isDuplicateContent =
       !skipDataMutation &&
       latest &&
@@ -662,12 +664,13 @@ export async function processCategoryExcelUpload(
           error: "fileContentHash is required when recording a duplicate-dataset audit trail.",
         };
       }
-      const version = await nextBatchVersion(hospitalId, category);
+      const version = await nextBatchVersion(hospitalId, category, assessmentCycleId);
       const batch = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const b = await tx.dataUploadBatch.create({
           data: {
             hospitalId,
             category,
+            assessmentCycleId,
             sourceFileName,
             fileContentHash: fh,
             batchVersion: version,
@@ -684,6 +687,7 @@ export async function processCategoryExcelUpload(
           data: {
             hospitalId,
             category,
+            assessmentCycleId,
             fileUrl: sourceFileName,
             sourceFile: sourceFileName,
             month: m,
@@ -753,7 +757,7 @@ export async function processCategoryExcelUpload(
       mergeStrategy === "KEEP_EXISTING_ADD_NEW"
         ? mergeStrategy
         : "KEEP_EXISTING_ADD_NEW";
-    const version = await nextBatchVersion(hospitalId, category);
+    const version = await nextBatchVersion(hospitalId, category, assessmentCycleId);
     const monthKeysCsv = [...new Set(incomingKeys)].sort().join(",");
 
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -761,6 +765,7 @@ export async function processCategoryExcelUpload(
         data: {
           hospitalId,
           category,
+          assessmentCycleId,
           sourceFileName,
           fileContentHash,
           batchVersion: version,
@@ -811,7 +816,7 @@ export async function processCategoryExcelUpload(
           ),
         ];
 
-        const orCal = orClauseFromCalendarKeys(uniqueOverlapCalendarKeys);
+        const orCal = orClauseFromCalendarKeys(uniqueOverlapCalendarKeys, assessmentCycleId);
 
         if (category === "Electricity" && orCal.length) {
           await tx.electricityData.deleteMany({
@@ -852,6 +857,7 @@ export async function processCategoryExcelUpload(
                     { year: p.year },
                     { month: p.month },
                     { refrigerantType: p.refrigerantType },
+                    { assessmentCycleId },
                   ],
                 })),
               },
@@ -970,6 +976,7 @@ export async function processCategoryExcelUpload(
           await tx.electricityData.create({
             data: {
               hospitalId,
+              assessmentCycleId,
               month: pb.month,
               year: pb.year,
               electricityKwh: parseNumericField(row.electricityKwh),
@@ -982,6 +989,7 @@ export async function processCategoryExcelUpload(
           await tx.waterData.create({
             data: {
               hospitalId,
+              assessmentCycleId,
               month: pb.month,
               year: pb.year,
               waterKl: parseNumericField(row.waterKl),
@@ -994,6 +1002,7 @@ export async function processCategoryExcelUpload(
           await tx.fuelData.create({
             data: {
               hospitalId,
+              assessmentCycleId,
               month: pb.month,
               year: pb.year,
               dgDieselLitres: parseNumericField(row.dgDieselLitres),
@@ -1005,6 +1014,7 @@ export async function processCategoryExcelUpload(
           await tx.wasteData.create({
             data: {
               hospitalId,
+              assessmentCycleId,
               month: pb.month,
               year: pb.year,
               biomedicalWasteKg: parseNumericField(row.biomedicalWasteKg),
@@ -1018,6 +1028,7 @@ export async function processCategoryExcelUpload(
           await tx.transportData.create({
             data: {
               hospitalId,
+              assessmentCycleId,
               month: pb.month,
               year: pb.year,
               ambulanceFuelLitres: parseNumericField(row.ambulanceFuelLitres),
@@ -1030,6 +1041,7 @@ export async function processCategoryExcelUpload(
           await tx.refrigerantData.create({
             data: {
               hospitalId,
+              assessmentCycleId,
               month: pb.month,
               year: pb.year,
               refrigerantType: String(row.refrigerantType ?? ""),
@@ -1041,7 +1053,7 @@ export async function processCategoryExcelUpload(
         }
       }
 
-      const refreshed = await loadExistingMapFromTx(tx, category, hospitalId);
+      const refreshed = await loadExistingMapFromTx(tx, category, hospitalId, assessmentCycleId);
       const distinctCal = distinctCalendarMonthsFromMap(refreshed);
 
       const firstRow = rows[0];
@@ -1051,6 +1063,7 @@ export async function processCategoryExcelUpload(
         data: {
           hospitalId,
           category,
+          assessmentCycleId,
           fileUrl: sourceFileName,
           sourceFile: sourceFileName,
           month: anchor.month,
@@ -1118,26 +1131,27 @@ function distinctCalendarMonthsFromMap(map: Map<string, Record<string, unknown>>
 async function loadExistingMapFromTx(
   tx: Prisma.TransactionClient,
   category: UploadCategoryPrisma,
-  hospitalId: string
+  hospitalId: string,
+  assessmentCycleId: string
 ) {
   const map = new Map<string, Record<string, unknown>>();
   if (category === "Electricity") {
-    const rows = await tx.electricityData.findMany({ where: { hospitalId } });
+    const rows = await tx.electricityData.findMany({ where: { hospitalId, assessmentCycleId } });
     for (const r of rows) map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
   } else if (category === "Water") {
-    const rows = await tx.waterData.findMany({ where: { hospitalId } });
+    const rows = await tx.waterData.findMany({ where: { hospitalId, assessmentCycleId } });
     for (const r of rows) map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
   } else if (category === "Fuel") {
-    const rows = await tx.fuelData.findMany({ where: { hospitalId } });
+    const rows = await tx.fuelData.findMany({ where: { hospitalId, assessmentCycleId } });
     for (const r of rows) map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
   } else if (category === "Waste") {
-    const rows = await tx.wasteData.findMany({ where: { hospitalId } });
+    const rows = await tx.wasteData.findMany({ where: { hospitalId, assessmentCycleId } });
     for (const r of rows) map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
   } else if (category === "Transport") {
-    const rows = await tx.transportData.findMany({ where: { hospitalId } });
+    const rows = await tx.transportData.findMany({ where: { hospitalId, assessmentCycleId } });
     for (const r of rows) map.set(buildCalendarMonthKey(r.year, r.month), { ...r });
   } else if (category === "Refrigerants") {
-    const rows = await tx.refrigerantData.findMany({ where: { hospitalId } });
+    const rows = await tx.refrigerantData.findMany({ where: { hospitalId, assessmentCycleId } });
     for (const r of rows) map.set(buildRefrigerantRowKey(r.year, r.month, r.refrigerantType), { ...r });
   }
   return map;

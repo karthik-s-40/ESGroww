@@ -21,7 +21,19 @@ async function runUpload(
   }
 
   const hospitalId = String(user.hospitalId);
-  const result = await processCategoryExcelUpload(category, hospitalId, formData);
+  
+  const cookieStore = await import("next/headers").then(m => m.cookies());
+  const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+
+  if (!assessmentCycleId) {
+    return {
+      success: false,
+      code: "VALIDATION",
+      error: "No active assessment cycle selected. Please create or select a cycle first.",
+    };
+  }
+
+  const result = await processCategoryExcelUpload(category, hospitalId, formData, assessmentCycleId);
 
   if (result.success) {
     revalidatePath("/esg-readiness-platform");
