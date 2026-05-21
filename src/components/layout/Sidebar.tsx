@@ -17,7 +17,8 @@ import {
   ChevronRight,
   X,
   Settings,
-  BookOpen
+  BookOpen,
+  CircleHelp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AssessmentSelector } from "@/components/dashboard/AssessmentSelector";
@@ -42,6 +43,7 @@ const MAIN_NAV: NavItem[] = [
 ];
 
 const BOTTOM_NAV: NavItem[] = [
+  { href: "/help", label: "Help", icon: CircleHelp },
   { href: "/admin", label: "Admin Console", icon: Settings, adminOnly: true },
   { href: "/profile", label: "Profile", icon: User },
   { label: "Logout", icon: LogOut, onClick: async () => {
