@@ -237,7 +237,7 @@ export default function ResultsPage() {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col px-3.5 py-4 box-border transition-opacity duration-500 ease-in-out"
+      className="min-h-screen w-full flex flex-col px-3 py-3.5 sm:px-4 sm:py-4 box-border overflow-x-hidden transition-opacity duration-500 ease-in-out"
       style={{
         background: "linear-gradient(180deg, #f8fafc 0%, #ecfdf5 100%)",
         opacity: loaded ? 1 : 0,
@@ -263,17 +263,17 @@ export default function ResultsPage() {
             </div>
           </div>
         </div>
-        <div data-html2canvas-ignore="true" className="flex gap-2 items-center">
+        <div data-html2canvas-ignore="true" className="flex w-full flex-wrap gap-2 items-center sm:w-auto sm:flex-nowrap">
           <DownloadReportButton
             data={data}
             captureRootId="pdf-report-capture"
             label={loaded ? "Download Report" : "Loading report..."}
-            className="min-w-[140px] bg-slate-900 text-white hover:bg-slate-800"
+            className="min-w-[140px] flex-1 sm:flex-none bg-slate-900 text-white hover:bg-slate-800"
             disabled={!loaded}
           />
           <Button
             variant="outline"
-            className="min-w-[140px] border-slate-200 text-slate-700 hover:bg-slate-100"
+            className="min-w-[140px] flex-1 sm:flex-none border-slate-200 text-slate-700 hover:bg-slate-100"
             onClick={() => setConsultationOpen((prev) => !prev)}
           >
             Book Consultation
@@ -322,12 +322,12 @@ export default function ResultsPage() {
         </div>
       )}
  
-      {/* ── Main grid ── */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "minmax(220px, 240px) minmax(140px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr)", gridAutoRows: "minmax(220px, auto)", gridTemplateRows: "minmax(240px, auto) minmax(240px, auto) auto", gap: 14, minHeight: 0 }}>
+      {/* ── Main grid: single column on phones, 2 cols tablet, 4 cols xl+ ── */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 gap-3.5 md:grid-cols-2 md:auto-rows-min xl:grid-cols-4">
  
-        {/* ── Col 1: Overall Hero (spans 2 rows) ── */}
-        <div className={`${glassCardClass} flex flex-col items-center justify-between rounded-2xl p-4.5`} style={{ ...glassCardStyle, gridRow: "1 / 3" }}>
-          <div className="text-center w-full">
+        {/* ── Col 1: Overall Hero (spans 2 rows on xl only) ── */}
+        <div className={`${glassCardClass} flex flex-col gap-4 rounded-2xl p-4 sm:p-4.5 md:col-span-2 xl:col-span-1 xl:row-span-2`} style={glassCardStyle}>
+          <div className="text-center w-full shrink-0">
             <p className="m-0 text-xs font-bold text-muted-foreground uppercase tracking-wider">Overall Readiness</p>
             <div className="my-1.5 mx-auto w-fit">
               <Gauge value={score} size={120} />
@@ -338,11 +338,11 @@ export default function ResultsPage() {
             <div className="text-xs text-muted-foreground mt-0.5">{data.readinessStage}</div>
           </div>
  
-          <div className="w-full mt-2 flex justify-center">
+          <div className="w-full mt-2 flex justify-center shrink-0">
             <Radar scores={radarData} />
           </div>
  
-          <div className="w-full mt-2">
+          <div className="w-full mt-2 shrink-0">
             {[
               { label: "Completeness", val: Math.round(data.completeness), col: "#3b82f6" },
               { label: "Confidence", val: Math.round(data.confidence * 100), col: "#8b5cf6" },
@@ -363,15 +363,15 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 1 Col 2: Certification Readiness ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4.5 overflow-visible flex flex-col`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 overflow-visible flex flex-col min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Certification Readiness</p>
           <div className="flex-1 flex flex-col gap-2 overflow-visible">
             {certEntries.map((cert) => {
               const s = cert.score;
               const c = stageColor(s);
               return (
-                <div key={cert.name} className="flex items-center gap-2">
-                  <div className="flex-[0_0_90px] text-xs font-semibold text-slate-700 truncate">{formatCertName(cert.name)}</div>
+                <div key={cert.name} className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                  <div className="basis-full min-w-0 sm:basis-[90px] sm:flex-[0_0_90px] text-xs font-semibold text-slate-700 break-words sm:truncate">{formatCertName(cert.name)}</div>
                   <div className="flex-1"><Bar value={s} color={c} /></div>
                   <div className="flex-[0_0_24px] text-xs font-bold text-right" style={{ color: c }}>{s}</div>
                   <div className="flex-[0_0_68px] text-[10px] font-bold rounded-md py-0.5 px-1.5 text-center" style={{ background: `${c}18`, color: c }}>{cert.status}</div>
@@ -385,7 +385,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 1 Col 3: Category Scores + Emissions ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Category Performance</p>
           <div className="grid grid-cols-2 gap-2 flex-1">
             {[
@@ -406,7 +406,7 @@ export default function ResultsPage() {
  
           <div className="mt-2.5 border-t border-slate-100 pt-2.5">
             <p className="m-0 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Emissions Breakdown</p>
-            <div className="flex gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {[
                 { label: "Scope 1", val: emis.scope1, color: "#dc2626" },
                 { label: "Scope 2", val: emis.scope2, color: "#ea580c" },
@@ -423,7 +423,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 1 Col 4: Annualized KPIs ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Annualized Metrics</p>
           <div className="grid grid-cols-2 gap-2 flex-1">
             {[
@@ -445,8 +445,8 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 2: Strengths + Gaps ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col overflow-visible`} style={glassCardStyle}>
-          <div className="flex gap-3 flex-1 min-h-0">
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-visible min-w-0`} style={glassCardStyle}>
+          <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0">
             {/* Strengths */}
             <div className="flex-1 overflow-visible flex flex-col">
               <p className="m-0 mb-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">✓ Strengths</p>
@@ -474,12 +474,12 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 3: Regulatory Readiness ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col overflow-visible`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-visible min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Regulatory Readiness</p>
           <div className="flex-1 flex flex-col gap-2">
             {(data.regulatoryReadiness ?? []).map((reg, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="flex-[0_0_120px] text-xs font-semibold text-slate-700 truncate">{reg.regulation}</div>
+              <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <div className="basis-full min-w-0 sm:basis-[120px] sm:flex-[0_0_120px] text-xs font-semibold text-slate-700 break-words sm:truncate">{reg.regulation}</div>
                 <div className="flex-1"><Bar value={reg.readiness} color={riskColor[reg.risk]} /></div>
                 <div className="flex-[0_0_24px] text-xs font-bold text-slate-955 text-right">{reg.readiness}</div>
                 <div className="flex-[0_0_72px] text-[10px] font-bold rounded-md py-0.5 px-1.5 text-center" style={{ background: `${riskColor[reg.risk]}15`, color: riskColor[reg.risk] }}>
@@ -507,7 +507,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 4: Priority Action Roadmap ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4.5 flex flex-col overflow-visible`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-visible min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Priority Action Roadmap</p>
           <div className="flex-1 flex flex-col gap-2 overflow-visible">
             {(data.roadmap ?? []).slice(0, 5).map((r, i) => {
@@ -536,8 +536,8 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 3: KPI Dashboard (full width) ── */}
-        <div className={`${glassCardClass} rounded-3xl p-5 md:p-6 flex flex-col gap-4.5`} style={{ ...glassCardStyle, gridColumn: "1 / -1" }}>
-          <div className="flex items-center justify-between">
+        <div className={`${glassCardClass} rounded-3xl p-4 sm:p-5 md:p-6 flex flex-col gap-4.5 min-w-0 md:col-span-2 xl:col-span-4`} style={glassCardStyle}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="m-0 text-sm font-extrabold text-slate-900 uppercase tracking-wider">KPI Scorecards</p>
               <p className="m-0 mt-0.5 text-xs text-muted-foreground">Benchmarked against healthcare industry standards</p>
@@ -546,7 +546,7 @@ export default function ResultsPage() {
               {kpiItems.length} Metrics Analyzed
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3">
             {kpiItems.map((item) => {
               const kpi = item.kpi;
               const isInsufficient = kpi.status === "Insufficient Data";
@@ -560,7 +560,7 @@ export default function ResultsPage() {
                   <div className="flex items-center justify-between gap-1 z-10">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-sm shrink-0">{item.icon}</span>
-                      <p className="m-0 text-[10px] font-bold text-slate-700 truncate">{item.title}</p>
+                      <p className="m-0 text-[10px] font-bold text-slate-700 line-clamp-2 sm:truncate">{item.title}</p>
                     </div>
                     <span className="text-[9px] font-bold text-white rounded-md px-1.5 py-0.5 shrink-0" style={{ background: scoreImpactColor }}>{scoreImpactLabel}</span>
                   </div>
@@ -570,7 +570,7 @@ export default function ResultsPage() {
                       {kpi.value !== null ? `${kpi.value.toFixed(1)}` : "N/A"}
                       {kpi.value !== null && <span className="text-[9px] font-bold text-muted-foreground ml-0.5">{item.unit}</span>}
                     </p>
-                    <p className="m-0 mt-1 text-[8px] text-muted-foreground truncate">
+                    <p className="m-0 mt-1 text-[9px] leading-snug text-slate-600 line-clamp-2">
                       {kpi.status}
                     </p>
                   </div>

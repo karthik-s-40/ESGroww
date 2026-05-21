@@ -173,9 +173,9 @@ export default async function SummaryPage() {
       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
 
         {/* HERO */}
-        <div className="bg-gradient-to-r from-emerald-700 to-emerald-500 rounded-2xl p-5 text-white shadow-lg">
+        <div className="bg-gradient-to-r from-emerald-700 to-emerald-500 rounded-2xl p-4 sm:p-5 text-white shadow-lg">
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
             <div>
 
@@ -190,14 +190,14 @@ export default async function SummaryPage() {
                 and ESG scoring insights.
               </p>
 
-              <div className="mt-4 flex items-center gap-3" data-html2canvas-ignore="true">
+              <div className="mt-4 flex flex-wrap items-center gap-3" data-html2canvas-ignore="true">
                 <GoToResultsButton />
                 <DownloadSummaryButton targetId="summary-report" />
               </div>
 
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-6 py-4 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/20 w-full sm:w-auto">
 
               <div className="flex items-center">
 
@@ -223,10 +223,10 @@ export default async function SummaryPage() {
         </div>
 
         {/* SCORE + METRICS */}
-        <div className="grid grid-cols-12 gap-3">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
 
           {/* SCORES */}
-          <div className="col-span-4 grid grid-cols-3 gap-3">
+          <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
 
             <ScoreBreakdownCard
               title="ENV"
@@ -246,7 +246,7 @@ export default async function SummaryPage() {
           </div>
 
           {/* METRICS */}
-          <div className="col-span-8 grid grid-cols-5 gap-3">
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
 
             <MetricCard
               label="Electricity"
@@ -288,10 +288,10 @@ export default async function SummaryPage() {
         </div>
 
         {/* MAIN GRID */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
 
           {/* COVERAGE */}
-          <div className="col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden">
+          <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden">
 
             <div className="flex items-center justify-between mb-4">
 
@@ -353,7 +353,7 @@ export default async function SummaryPage() {
           </div>
 
           {/* INSIGHTS */}
-          <div className="col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden">
+          <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden">
 
             <h2 className="text-xl font-bold text-slate-900 mb-4">
               AI ESG Insights
@@ -391,7 +391,7 @@ export default async function SummaryPage() {
           </div>
 
           {/* EMISSIONS + ACTIONS */}
-          <div className="col-span-4 space-y-4">
+          <div className="xl:col-span-4 space-y-4">
 
             {/* EMISSIONS */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
