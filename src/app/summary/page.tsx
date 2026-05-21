@@ -84,13 +84,13 @@ export default async function SummaryPage() {
   }
 
     return (
-    <PageWrapper maxWidth="wide" dense id="summary-report">
-      
-      {/* HERO SECTION */}
-      <div className="bg-gradient-to-r from-emerald-800 to-emerald-600 rounded-xl p-5 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <PageWrapper maxWidth="ultra" dense id="summary-report">
+
+      {/* HERO SECTION — matches Assessment page header style: plain white bg, dark text, green accent only on score */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <PageTitle className="text-white">ESG Intelligence Center</PageTitle>
-          <BodyText className="text-emerald-100 mt-1 max-w-xl">
+          <PageTitle>ESG Intelligence Center</PageTitle>
+          <BodyText className="text-muted-foreground mt-1 max-w-xl">
             Real-time sustainability readiness, operational analytics, carbon intelligence, and ESG scoring insights.
           </BodyText>
           <div className="mt-4 flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
@@ -99,13 +99,14 @@ export default async function SummaryPage() {
           </div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md rounded-xl px-5 py-3 border border-white/20 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-emerald-100 uppercase tracking-wide">ESG Readiness Score</span>
+        {/* Score card — uses green accent sparingly, same as the "OK" badge style on assessment */}
+        <div className="bg-white rounded-xl border border-border px-5 py-4 shadow-sm shrink-0 min-w-[160px]">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">ESG Readiness Score</span>
             <InfoTooltip text="Calculated using Environmental, Social, and Governance scores derived from emissions, water recycling, and reporting completeness." />
           </div>
-          <MetricValue className="text-white text-4xl mt-1">{overallScore}</MetricValue>
-          <HelperText className="text-emerald-100 mt-0.5 font-medium">{readiness}</HelperText>
+          <MetricValue className="text-4xl text-foreground">{overallScore}</MetricValue>
+          <HelperText className="text-emerald-600 font-medium mt-0.5">{readiness}</HelperText>
         </div>
       </div>
 
@@ -123,8 +124,8 @@ export default async function SummaryPage() {
 
       {/* BENTO GRID CONTENT */}
       <BentoGrid
-        leftClassName="lg:col-span-1 xl:col-span-4"
-        centerClassName="lg:col-span-1 xl:col-span-4"
+        leftClassName="lg:col-span-1 xl:col-span-3"
+        centerClassName="lg:col-span-1 xl:col-span-5"
         rightClassName="lg:col-span-2 xl:col-span-4"
         left={
           <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col h-full">
@@ -133,7 +134,8 @@ export default async function SummaryPage() {
                 <SectionTitle>Data Coverage</SectionTitle>
                 <InfoTooltip text="Shows how many months of ESG operational data are available across each reporting category." />
               </div>
-              <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-100">
+              {/* Confidence badge — neutral style matching assessment page badges */}
+              <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-slate-200">
                 {confidence}% Conf.
               </span>
             </div>
@@ -173,19 +175,38 @@ export default async function SummaryPage() {
                 <InfoTooltip text="Calculated from annualized operational activity using shared emission factors." />
               </div>
               <div className="space-y-2">
-                <EmissionRow label="Electricity" detail={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * 0.82)} kgCO₂e`} />
-                <EmissionRow label="Diesel" detail={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L`} value={`${data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * 2.68)} kgCO₂e`} />
-                <EmissionRow label="Transport" detail={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L`} value={`${data.emissions?.transportEmissions ?? 0} kgCO₂e`} />
-                <EmissionRow label="Refrigerants" detail={`${Math.round(data.emissions?.annualizedRefrigerantEmissions ?? 0)} kg leaked`} value={`${data.emissions?.refrigerantEmissions ?? 0} kgCO₂e`} />
+                <EmissionRow 
+                  label="Electricity" 
+                  detail={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} 
+                  value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * 0.82)} kgCO₂e`} 
+                  formula={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh × 0.82`}
+                />
+                <EmissionRow 
+                  label="Diesel" 
+                  detail={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L`} 
+                  value={`${data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * 2.68)} kgCO₂e`} 
+                  formula={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L × 2.68`}
+                />
+                <EmissionRow 
+                  label="Transport" 
+                  detail={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L`} 
+                  value={`${data.emissions?.transportEmissions ?? 0} kgCO₂e`} 
+                  formula={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L × 2.68`}
+                />
+                <EmissionRow 
+                  label="Refrigerants" 
+                  detail={`${Math.round(data.emissions?.annualizedRefrigerantEmissions ?? 0)} kg leaked`} 
+                  value={`${data.emissions?.refrigerantEmissions ?? 0} kgCO₂e`} 
+                />
                 <div className="pt-2 mt-2 border-t border-border flex justify-between items-center font-bold">
                   <span className="text-sm text-foreground">Total</span>
-                  <span className="text-sm text-emerald-700">{totalEmissions} kgCO₂e</span>
+                  <span className="text-sm text-emerald-600">{totalEmissions} kgCO₂e</span>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-emerald-50/50 rounded-xl border border-emerald-100 p-4 shadow-sm flex-1">
-              <SectionTitle className="mb-3 text-emerald-900">Recommended Actions</SectionTitle>
+
+            <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex-1">
+              <SectionTitle className="mb-3">Recommended Actions</SectionTitle>
               <div className="space-y-2">
                 {recommendations.map((item, index) => (
                   <RecommendationCard key={index} title={item.title} desc={item.desc} />
@@ -226,7 +247,7 @@ function InfoTooltip({ text }: { text: string }) {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-xl border border-border p-3 shadow-sm flex flex-col justify-center">
+    <div className="bg-white rounded-xl border border-border p-3 shadow-sm flex flex-col justify-center transition-all duration-200 hover:shadow-md hover:border-slate-300">
       <HelperText>{label}</HelperText>
       <div className="text-sm font-bold text-foreground mt-0.5 truncate">{value}</div>
     </div>
@@ -238,7 +259,7 @@ function ScoreBreakdownCard({ title, score }: { title: string; score: number }) 
     <div className="bg-white rounded-xl border border-border p-3 shadow-sm flex flex-col justify-center">
       <div className="flex items-center justify-between">
         <HelperText className="font-semibold">{title}</HelperText>
-        <span className="text-sm font-bold text-emerald-600">{score}</span>
+        <span className="text-sm font-bold text-foreground">{score}</span>
       </div>
       <div className="w-full bg-slate-100 rounded-full h-1.5 mt-1.5 overflow-hidden">
         <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${score}%` }} />
@@ -264,18 +285,18 @@ function CoverageBar({ label, value }: { label: string; value: number }) {
 
 function InsightCard({ text }: { text: string }) {
   return (
-    <div className="border border-emerald-100 bg-emerald-50/50 rounded-lg p-2">
-      <HelperText className="text-emerald-900">{text}</HelperText>
+    <div className="border border-border bg-slate-50 rounded-lg p-2">
+      <HelperText className="text-foreground">{text}</HelperText>
     </div>
   );
 }
 
 function DriverCard({ title, impact, type, detail }: { title: string; impact: string; type: DriverType; detail?: string; }) {
   return (
-    <div className={`rounded-lg p-2.5 border ${type === "positive" ? "bg-emerald-50/30 border-emerald-100" : "bg-rose-50/30 border-rose-100"}`}>
+    <div className={`rounded-lg p-2.5 border ${type === "positive" ? "bg-slate-50 border-border" : "bg-slate-50 border-border"}`}>
       <div className="flex items-center justify-between">
         <span className="font-semibold text-foreground text-xs">{title}</span>
-        <span className={`font-bold text-xs ${type === "positive" ? "text-emerald-600" : "text-rose-600"}`}>{impact}</span>
+        <span className={`font-bold text-xs ${type === "positive" ? "text-emerald-600" : "text-rose-500"}`}>{impact}</span>
       </div>
       {detail && <HelperText className="mt-1">{detail}</HelperText>}
     </div>
@@ -284,21 +305,24 @@ function DriverCard({ title, impact, type, detail }: { title: string; impact: st
 
 function RecommendationCard({ title, desc }: { title: string; desc: string; }) {
   return (
-    <div className="bg-white rounded-lg p-2.5 border border-emerald-100 shadow-sm">
-      <CardTitle className="text-emerald-900">{title}</CardTitle>
+    <div className="bg-slate-50 rounded-lg p-2.5 border border-border">
+      <CardTitle>{title}</CardTitle>
       <HelperText className="mt-0.5">{desc}</HelperText>
     </div>
   );
 }
 
-function EmissionRow({ label, detail, value }: { label: string; detail: string; value: string }) {
+function EmissionRow({ label, detail, value, formula }: { label: string; detail: string; value: string; formula?: string }) {
   return (
-    <div className="bg-slate-50 rounded-lg p-2.5 flex items-center justify-between">
+    <div className="bg-slate-50 rounded-lg p-2.5 flex items-center justify-between transition-colors hover:bg-slate-100 group border border-transparent hover:border-slate-200">
       <div>
         <div className="text-xs font-semibold text-foreground">{label}</div>
         <div className="text-[10px] text-muted-foreground">{detail}</div>
       </div>
-      <div className="text-xs font-bold text-emerald-700">{value}</div>
+      <div className="text-right">
+        <div className="text-xs font-bold text-emerald-600">{value}</div>
+        {formula && <div className="text-[9.5px] font-medium text-slate-400 mt-0.5 group-hover:text-slate-500 transition-colors">{formula} = {value}</div>}
+      </div>
     </div>
   );
 }

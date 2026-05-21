@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DownloadReportButton } from "@/components/shared/DownloadReportButton";
-import { ReportPdfCapture } from "@/components/pdf/ReportPdfCapture";
+// ReportPdfCapture removed from import
 import { Link2, Mail, Phone } from "lucide-react";
 import { type KPIBenchmark } from "@/lib/kpiUtils";
 
@@ -246,7 +246,6 @@ export default function ResultsPage() {
         opacity: loaded ? 1 : 0,
       }}
     >
-      <ReportPdfCapture data={data} />
       <div
         id="results-report-capture"
         className="flex flex-col flex-1 min-h-0 w-full max-w-full"
@@ -325,11 +324,11 @@ export default function ResultsPage() {
         </div>
       )}
  
-      {/* ── Main grid: single column on phones, 2 cols tablet, 4 cols xl+ ── */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 gap-3.5 md:grid-cols-2 md:auto-rows-min xl:grid-cols-4">
+      {/* ── Main grid: single col on phones, 2 cols tablet, 4 cols lg+ (locks the exact 80% layout design) ── */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
  
-        {/* ── Col 1: Overall Hero (spans 2 rows on xl only) ── */}
-        <div className={`${glassCardClass} flex flex-col gap-4 rounded-2xl p-4 sm:p-4.5 md:col-span-2 xl:col-span-1 xl:row-span-2`} style={glassCardStyle}>
+        {/* ── Col 1: Overall Hero (spans 2 rows on lg+) ── */}
+        <div className={`${glassCardClass} flex flex-col gap-4 rounded-2xl p-4 sm:p-4.5 md:col-span-2 lg:col-span-1 lg:row-span-2`} style={glassCardStyle}>
           <div className="text-center w-full shrink-0">
             <p className="m-0 text-xs font-bold text-muted-foreground uppercase tracking-wider">Overall Readiness</p>
             <div className="my-1.5 mx-auto w-fit">
@@ -366,7 +365,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 1 Col 2: Certification Readiness ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 overflow-visible flex flex-col min-w-0`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 overflow-hidden flex flex-col min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Certification Readiness</p>
           <div className="flex-1 flex flex-col gap-2 overflow-visible">
             {certEntries.map((cert) => {
@@ -374,10 +373,10 @@ export default function ResultsPage() {
               const c = stageColor(s);
               return (
                 <div key={cert.name} className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                  <div className="basis-full min-w-0 sm:basis-[90px] sm:flex-[0_0_90px] text-xs font-semibold text-slate-700 break-words sm:truncate">{formatCertName(cert.name)}</div>
-                  <div className="flex-1"><Bar value={s} color={c} /></div>
-                  <div className="flex-[0_0_24px] text-xs font-bold text-right" style={{ color: c }}>{s}</div>
-                  <div className="flex-[0_0_68px] text-[10px] font-bold rounded-md py-0.5 px-1.5 text-center" style={{ background: `${c}18`, color: c }}>{cert.status}</div>
+                  <div className="basis-[70px] flex-[0_0_70px] lg:basis-[85px] lg:flex-[0_0_85px] text-xs font-semibold text-slate-700 break-words leading-tight">{formatCertName(cert.name)}</div>
+                  <div className="flex-1 min-w-[30px]"><Bar value={s} color={c} /></div>
+                  <div className="basis-[20px] flex-[0_0_20px] text-xs font-bold text-right" style={{ color: c }}>{s}</div>
+                  <div className="basis-[55px] flex-[0_0_55px] lg:basis-[68px] lg:flex-[0_0_68px] text-[9px] lg:text-[10px] font-bold rounded-md py-0.5 px-1 text-center whitespace-nowrap overflow-hidden text-ellipsis" style={{ background: `${c}18`, color: c }}>{cert.status}</div>
                 </div>
               );
             })}
@@ -399,8 +398,8 @@ export default function ResultsPage() {
             ].map(c => (
               <div key={c.label} className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] text-slate-500 font-bold">{c.icon} {c.label}</span>
-                  <span className="text-sm font-black" style={{ color: stageColor(c.val) }}>{Math.round(c.val)}</span>
+                  <span className="text-[10px] text-slate-500 font-bold flex-1 truncate mr-1" title={c.label}>{c.icon} {c.label}</span>
+                  <span className="text-sm font-black shrink-0" style={{ color: stageColor(c.val) }}>{Math.round(c.val)}</span>
                 </div>
                 <Bar value={c.val} color={c.color} />
               </div>
@@ -448,7 +447,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 2: Strengths + Gaps ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-visible min-w-0`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-hidden min-w-0`} style={glassCardStyle}>
           <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0">
             {/* Strengths */}
             <div className="flex-1 overflow-visible flex flex-col">
@@ -477,7 +476,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 3: Regulatory Readiness ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-visible min-w-0`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-hidden min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Regulatory Readiness</p>
           <div className="flex-1 flex flex-col gap-2">
             {(data.regulatoryReadiness ?? []).map((reg, i) => (
@@ -510,7 +509,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 4: Priority Action Roadmap ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-visible min-w-0`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-hidden min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Priority Action Roadmap</p>
           <div className="flex-1 flex flex-col gap-2 overflow-visible">
             {(data.roadmap ?? []).slice(0, 5).map((r, i) => {
@@ -541,7 +540,7 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 3: KPI Dashboard (full width) ── */}
-        <div className={`${glassCardClass} rounded-3xl p-4 sm:p-5 md:p-6 flex flex-col gap-4.5 min-w-0 md:col-span-2 xl:col-span-4`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-3xl p-4 sm:p-5 md:p-6 flex flex-col gap-4.5 min-w-0 md:col-span-2 lg:col-span-4`} style={glassCardStyle}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="m-0 text-sm font-extrabold text-slate-900 uppercase tracking-wider">KPI Scorecards</p>

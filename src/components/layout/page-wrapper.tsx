@@ -2,12 +2,13 @@ import { memo, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-export type PageWrapperMax = "narrow" | "content" | "wide" | "full";
+export type PageWrapperMax = "narrow" | "content" | "wide" | "ultra" | "full";
 
 const maxClass: Record<PageWrapperMax, string> = {
   narrow: "max-w-3xl",
   content: "max-w-4xl",
   wide: "max-w-6xl",
+  ultra: "max-w-[1400px]",
   full: "max-w-none",
 };
 
