@@ -9,7 +9,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin") ?? false;
-  const isAuth = pathname?.startsWith("/login") || pathname?.startsWith("/register");
+  const isAuth = pathname?.startsWith("/login") || pathname?.startsWith("/register") || pathname === "/";
   
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);

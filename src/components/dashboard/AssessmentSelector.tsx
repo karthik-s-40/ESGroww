@@ -23,7 +23,7 @@ export function AssessmentSelector() {
 
     setActiveId(val);
     await setActiveAssessmentCycle(val);
-    router.refresh();
+    window.location.reload();
   };
 
   if (cycles.length === 0) {
