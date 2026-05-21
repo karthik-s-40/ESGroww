@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,9 +16,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Settings
+  Settings,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AssessmentSelector } from "@/components/dashboard/AssessmentSelector";
 
 type NavItem = {
   href?: string;
@@ -25,20 +28,21 @@ type NavItem = {
   icon: React.ElementType;
   exact?: boolean;
   onClick?: () => void;
+  adminOnly?: boolean;
 };
 
 const MAIN_NAV: NavItem[] = [
-  { href: "/esg-readiness-platform", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/summary", label: "ESG Readiness", icon: Upload },
+  { href: "/esg-readiness-platform", label: "ESG Readiness Platform", icon: Upload, exact: true },
+  { href: "/summary", label: "Summary", icon: LayoutDashboard },
   { href: "/results", label: "Results", icon: BarChart2 },
-  { href: "/where-i-stand", label: "Where I Stand", icon: PieChart },
   { href: "/kpi", label: "KPIs", icon: PieChart },
   { href: "/metrics", label: "Metrics", icon: ShieldAlert },
-  { href: "/history", label: "Assessment History", icon: History },
+  { href: "/glossary", label: "Glossary", icon: BookOpen },
+  { href: "/esg-readiness-platform/history", label: "Assessment History", icon: History },
 ];
 
 const BOTTOM_NAV: NavItem[] = [
-  { href: "/admin", label: "Admin Console", icon: Settings },
+  { href: "/admin", label: "Admin Console", icon: Settings, adminOnly: true },
   { href: "/profile", label: "Profile", icon: User },
   { label: "Logout", icon: LogOut, onClick: async () => {
       try {
@@ -61,10 +65,26 @@ interface SidebarProps {
 export function Sidebar({ isMobileOpen, setIsMobileOpen, isCollapsed, setIsCollapsed }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.role === 'ADMIN') {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
 
   const renderNavItems = (items: NavItem[]) => (
     <nav className="flex flex-col gap-1 px-3 py-2">
       {items.map((item) => {
+        if (item.adminOnly && !isAdmin) return null;
+
         const active = item.href 
           ? (item.exact ? pathname === item.href : pathname === item.href || pathname?.startsWith(item.href + "/"))
           : false;
@@ -167,14 +187,18 @@ export function Sidebar({ isMobileOpen, setIsMobileOpen, isCollapsed, setIsColla
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
-          <div className="mb-2 px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
+          <div className={cn("px-4 mb-3 transition-all duration-300", isCollapsed ? "opacity-0 pointer-events-none hidden" : "opacity-100")}>
+            <AssessmentSelector />
+          </div>
+
+          <div className="mb-1 px-4 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
             {!isCollapsed && "Platform"}
           </div>
           {renderNavItems(MAIN_NAV)}
         </div>
 
-        <div className="shrink-0 border-t border-border py-4">
+        <div className="shrink-0 border-t border-border py-2">
           {renderNavItems(BOTTOM_NAV)}
         </div>
 

@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import BackButton from "@/components/BackButton";
-import { AssessmentSelector } from "@/components/dashboard/AssessmentSelector";
 
 import { Menu } from "lucide-react";
 
@@ -53,7 +52,6 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
 
         <div className="ml-auto">
-          <AssessmentSelector />
         </div>
       </div>
     </header>

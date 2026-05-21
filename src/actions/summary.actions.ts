@@ -32,23 +32,10 @@ export async function getSummaryData(assessmentCycleId?: string) {
   /* GET HOSPITAL                          */
   /* ===================================== */
 
-  const latestUpload =
-  await prisma.upload.findFirst({
-    where: assessmentCycleId ? { assessmentCycleId } : undefined,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
 
-if (!latestUpload) {
-  throw new AppError("No uploads found", 404);
-}
-
-const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
-
-const hospital = await prisma.hospital.findUnique({
-  where: { id: latestUpload.hospitalId },
-  select: {
+  const hospital = await prisma.hospital.findFirst({
+    select: {
     hospitalName: true,
     industry: true,
     numberOfBeds: true,

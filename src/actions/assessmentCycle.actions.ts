@@ -46,11 +46,16 @@ export async function createAssessmentCycle(name: string, year: number) {
   const cookieStore = await cookies();
   cookieStore.set("activeAssessmentCycleId", cycle.id, { path: "/" });
   
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath("/");
+  
   return { success: true, cycle };
 }
 
 export async function setActiveAssessmentCycle(cycleId: string) {
   const cookieStore = await cookies();
   cookieStore.set("activeAssessmentCycleId", cycleId, { path: "/" });
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath("/");
   return { success: true };
 }

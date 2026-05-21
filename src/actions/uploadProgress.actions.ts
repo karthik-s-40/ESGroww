@@ -110,17 +110,21 @@ export async function getUploadProgress(): Promise<UploadProgressPayload | null>
 
   const hospitalId = String(user.hospitalId);
 
+  const cookieStore = await import("next/headers").then(m => m.cookies());
+  const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
+
   const hospital = await prisma.hospital.findUnique({
     where: {
       id: hospitalId,
     },
     include: {
-      electricityData: true,
-      waterData: true,
-      fuelData: true,
-      wasteData: true,
-      refrigerantData: true,
-      transportData: true,
+      electricityData: dataCondition,
+      waterData: dataCondition,
+      fuelData: dataCondition,
+      wasteData: dataCondition,
+      refrigerantData: dataCondition,
+      transportData: dataCondition,
       governanceData: true,
     },
   });
@@ -185,11 +189,13 @@ export async function getRecentUploads(limit = 10) {
     return null;
   }
 
-  const hospitalId = String(user.hospitalId);
+  const cookieStore = await import("next/headers").then(m => m.cookies());
+  const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
 
   const uploads = await prisma.upload.findMany({
     where: {
       hospitalId,
+      ...(assessmentCycleId ? { assessmentCycleId } : {}),
     },
     orderBy: {
       createdAt: "desc",

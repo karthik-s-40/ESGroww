@@ -14,17 +14,17 @@ export default function UploadWorkspace() {
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   return (
-    <div className="grid min-h-0 w-full min-w-0 grid-cols-1 gap-2 lg:grid-cols-12 lg:gap-2.5 lg:max-h-[min(calc(100dvh-13rem),860px)] lg:overflow-hidden">
+    <div className="grid min-h-0 w-full min-w-0 grid-cols-1 gap-2 lg:grid-cols-12 lg:gap-2.5">
       {/* Main bento: categories + governance / additional */}
-      <section className="flex min-h-0 min-w-0 flex-col overflow-y-auto overflow-x-hidden lg:col-span-9 2xl:col-span-9">
+      <section className="flex min-h-0 min-w-0 flex-col lg:col-span-9 2xl:col-span-9">
         <UploadCategoryGrid onDataChanged={bump} compact />
       </section>
 
       {/* Side rail: overview + recent + proceed */}
-      <aside className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden lg:col-span-3 2xl:col-span-3">
+      <aside className="flex min-h-0 min-w-0 flex-col gap-2 lg:col-span-3 2xl:col-span-3">
         <UploadOverviewPanel refreshKey={refreshKey} variant="compact" />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-border bg-card shadow-sm">
           <RecentUploadsTable refreshKey={refreshKey} limit={10} showViewAllLink compact />
         </div>
 

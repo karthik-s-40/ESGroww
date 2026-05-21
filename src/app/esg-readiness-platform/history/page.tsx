@@ -1,23 +1,20 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { getAssessmentCycles } from "@/actions/assessmentCycle.actions";
+import { PageWrapper } from "@/components/layout/page-wrapper";
+import { HistoryTable } from "@/components/history/HistoryTable";
 
-import RecentUploadsTable from "@/components/upload/RecentUploadsTable";
+export default async function HistoryPage() {
+  const { cycles, activeId } = await getAssessmentCycles();
 
-export default function UploadHistoryPage() {
   return (
-    <div className="mx-auto max-w-6xl pb-16">
-      <Link
-        href="/esg-readiness-platform"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Data Load
-      </Link>
-      <h1 className="text-2xl font-bold text-slate-900">All uploads</h1>
-      <p className="mt-1 text-sm text-slate-500">Excel files recorded for your organization, newest first.</p>
-      <div className="mt-8">
-        <RecentUploadsTable limit={200} showViewAllLink={false} showTitle={false} />
-      </div>
-    </div>
+    <PageWrapper className="pb-14">
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">Assessment History</h1>
+        <p className="text-sm text-muted-foreground">
+          View all your past assessments, switch your active session, and review historical data.
+        </p>
+      </header>
+
+      <HistoryTable cycles={cycles} activeId={activeId || null} />
+    </PageWrapper>
   );
 }
