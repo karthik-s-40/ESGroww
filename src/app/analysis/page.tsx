@@ -22,16 +22,17 @@ export default function AnalysisPage() {
   }
 
   // Calculate metrics
-  const sqft = data?.builtUpArea || data?.orgBuiltUpArea || 0;
-  const electricity = data?.annualizedValues?.electricity || 0;
-  const water = data?.annualizedValues?.water || 0;
+  const typedData = data as any;
+  const sqft = typedData?.builtUpArea || typedData?.orgBuiltUpArea || 0;
+  const electricity = typedData?.annualizedValues?.electricity || 0;
+  const water = typedData?.annualizedValues?.water || 0;
 
   const energyIntensity = electricity > 0 && sqft > 0 ? electricity / sqft : null;
   const waterIntensity = water > 0 && sqft > 0 ? water / sqft : null;
   const energyIntensityValue = energyIntensity ?? 0;
   const waterIntensityValue = waterIntensity ?? 0;
-  const renewableEnergy = data?.percentages?.renewableEnergy || 0;
-  const recyclingRate = data?.percentages?.wasteRecycling || 0;
+  const renewableEnergy = typedData?.percentages?.renewableEnergy || 0;
+  const recyclingRate = typedData?.percentages?.wasteRecycling || 0;
 
   // Benchmark ranges for display
   const energyBenchmarks = [

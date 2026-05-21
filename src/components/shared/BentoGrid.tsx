@@ -22,7 +22,7 @@ export default function BentoGrid({
   rightClassName = "xl:col-span-4",
 }: BentoGridProps) {
   return (
-    <div className={`flex-1 min-h-0 grid grid-cols-1 gap-3 xl:grid-cols-12 ${className}`}>
+    <div className={`flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-12 ${className}`}>
       <div className={`min-h-0 min-w-0 ${leftClassName}`}>{left}</div>
       <div className={`min-h-0 min-w-0 ${centerClassName}`}>{center}</div>
       <div className={`min-h-0 min-w-0 ${rightClassName}`}>{right}</div>

@@ -190,9 +190,9 @@ function CategoryCard({ config, uploadedMonths, readiness, onUploadSuccess, comp
             <ExcelUploadButton category={config.key} onUploadSuccess={onUploadSuccess} dense />
             <a href={config.template} download className="block">
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="xs"
-                className="h-6 w-full text-[10px] text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                className="h-6 w-full text-[10px]"
               >
                 Download Template
               </Button>
@@ -239,11 +239,11 @@ function CategoryCard({ config, uploadedMonths, readiness, onUploadSuccess, comp
           <ExcelUploadButton category={config.key} onUploadSuccess={onUploadSuccess} />
           <a href={config.template} download className="block">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
-              className="h-8 w-full text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="h-8 w-full text-xs"
             >
-              Download template
+              Download Template
             </Button>
           </a>
         </div>

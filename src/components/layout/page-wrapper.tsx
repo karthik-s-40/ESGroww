@@ -18,6 +18,8 @@ export interface PageWrapperProps {
   maxWidth?: PageWrapperMax;
   /** Tighter vertical rhythm for dense dashboards */
   dense?: boolean;
+  /** Optional ID for the wrapper element */
+  id?: string;
 }
 
 /**
@@ -29,13 +31,15 @@ export const PageWrapper = memo(function PageWrapper({
   className,
   maxWidth = "full",
   dense,
+  id,
 }: PageWrapperProps) {
   return (
     <div
+      id={id}
       className={cn(
         "mx-auto flex w-full min-w-0 flex-1 flex-col",
         maxClass[maxWidth],
-        dense ? "gap-2 px-2 py-2 sm:gap-2.5 sm:px-3 sm:py-2.5" : "gap-4 px-3 py-3 sm:gap-5 sm:px-4 sm:py-4 lg:px-6",
+        dense ? "gap-2 py-2 sm:gap-3 sm:py-3" : "gap-4 py-3 sm:gap-5 sm:py-4",
         className
       )}
     >

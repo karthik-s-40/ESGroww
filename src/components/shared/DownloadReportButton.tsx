@@ -73,7 +73,7 @@ export function DownloadReportButton({
   const effectiveLabel = busy ? "Preparing PDF…" : label;
 
   return (
-    <Button variant="default" className={className} onClick={() => void handleDownload()} disabled={effectiveDisabled}>
+    <Button variant="secondary" className={className} onClick={() => void handleDownload()} disabled={effectiveDisabled}>
       {effectiveLabel}
     </Button>
   );

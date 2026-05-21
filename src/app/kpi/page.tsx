@@ -31,8 +31,9 @@ export default function KPIPage() {
   }
 
   // Extract assessment data
-  const annualizedValues = data?.annualizedValues || {};
-  const sqft = data?.builtUpArea || data?.orgBuiltUpArea || 0;
+  const typedData = data as any;
+  const annualizedValues = typedData?.annualizedValues || {};
+  const sqft = typedData?.builtUpArea || typedData?.orgBuiltUpArea || 0;
 
   // Calculate KPIs
   const electricity = annualizedValues.electricity || 0;
@@ -44,9 +45,9 @@ export default function KPIPage() {
   const waterIntensity = water > 0 && sqft > 0 ? water / sqft : null;
 
   // Percentages from assessment data
-  const renewablePercentage = data?.percentages?.renewableEnergy || 0;
-  const waterRecyclingPercentage = data?.percentages?.waterRecycling || 0;
-  const wasteRecyclingPercentage = data?.percentages?.wasteRecycling || 0;
+  const renewablePercentage = typedData?.percentages?.renewableEnergy || 0;
+  const waterRecyclingPercentage = typedData?.percentages?.waterRecycling || 0;
+  const wasteRecyclingPercentage = typedData?.percentages?.wasteRecycling || 0;
 
   // Placeholder values - these need actual meter/supply data
   const powerFactor = 0.85;
