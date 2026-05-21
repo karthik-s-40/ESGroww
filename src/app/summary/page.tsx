@@ -20,6 +20,12 @@ type DriverCardData = {
 export default async function SummaryPage() {
   try {
     const data = await getSummaryData();
+    const { getESGConfiguration } = await import("@/lib/config-engine");
+    const config = await getESGConfiguration();
+
+    const efElectricity = config.emissionFactors.electricity ?? config.defaultFactors.electricity;
+    const efDiesel = config.emissionFactors.diesel ?? config.defaultFactors.diesel;
+    const efTransport = config.emissionFactors.ambulancefuel ?? config.defaultFactors.ambulanceFuel;
 
   const environmentalScore = data.scores.environmentalScore;
   const socialScore        = data.scores.socialScore;
@@ -178,20 +184,20 @@ export default async function SummaryPage() {
                 <EmissionRow 
                   label="Electricity" 
                   detail={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} 
-                  value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * 0.82)} kgCO₂e`} 
-                  formula={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh × 0.82`}
+                  value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * efElectricity)} kgCO₂e`} 
+                  formula={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh × ${efElectricity}`}
                 />
                 <EmissionRow 
                   label="Diesel" 
                   detail={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L`} 
-                  value={`${data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * 2.68)} kgCO₂e`} 
-                  formula={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L × 2.68`}
+                  value={`${data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * efDiesel)} kgCO₂e`} 
+                  formula={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L × ${efDiesel}`}
                 />
                 <EmissionRow 
                   label="Transport" 
                   detail={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L`} 
                   value={`${data.emissions?.transportEmissions ?? 0} kgCO₂e`} 
-                  formula={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L × 2.68`}
+                  formula={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L × ${efTransport}`}
                 />
                 <EmissionRow 
                   label="Refrigerants" 

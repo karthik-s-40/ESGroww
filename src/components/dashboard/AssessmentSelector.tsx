@@ -17,7 +17,6 @@ export function AssessmentSelector() {
     });
   }, []);
 
-
   const handleSelect = async (val: string | null) => {
     if (!val) return;
 
@@ -35,17 +34,25 @@ export function AssessmentSelector() {
     );
   }
 
+  // Ensure activeId actually exists in cycles to prevent Radix from rendering the raw ID
+  const validActiveId = cycles.some(c => c.id === activeId) ? activeId : undefined;
+  
+  // Explicitly find the active name to bypass Radix UI hydration bugs
+  const activeName = cycles.find(c => c.id === validActiveId)?.name;
+
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-muted-foreground font-medium">Cycle:</span>
-      <Select value={activeId || undefined} onValueChange={handleSelect}>
+      <Select value={validActiveId} onValueChange={handleSelect}>
         <SelectTrigger className="h-8 w-[140px] text-xs font-semibold bg-secondary/20 border-border">
-          <SelectValue placeholder="Select Cycle" />
+          <SelectValue placeholder="Select Cycle">
+            {activeName}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {cycles.map((c) => (
             <SelectItem key={c.id} value={c.id} className="text-xs">
-              {c.name} ({c.year})
+              {c.name}
             </SelectItem>
           ))}
         </SelectContent>

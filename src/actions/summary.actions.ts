@@ -305,8 +305,7 @@ export async function getSummaryData(assessmentCycleId?: string) {
   const environmentalScore =
     Math.max(
       0,
-      100 -
-        totalEmissions / 1000
+      Math.min(100, Math.round(100 - (totalEmissions / 10000)))
     );
 
   const socialScore =
