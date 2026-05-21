@@ -275,7 +275,7 @@ export default function LoginForm() {
               </CardTitle>
 
               <CardDescription className="text-center leading-relaxed text-muted-foreground">
-                Log in to ESGroww — your SAM Assessment–style sustainability
+                Log in to ESGroww — your ESGroww Assessment–style sustainability
                 readiness workspace.
               </CardDescription>
             </CardHeader>
@@ -414,7 +414,7 @@ export default function LoginForm() {
 
             <CardFooter className="flex flex-col gap-2 border-t border-border/80 bg-muted/30 p-4">
               <p className="px-2 text-center text-xs leading-relaxed text-muted-foreground">
-                SAM Assessment Application provides indicative sustainability and
+                ESGroww  Assessment Application provides indicative sustainability and
                 certification readiness intelligence only — not a substitute
                 for audits or legal advice.
               </p>

@@ -489,7 +489,7 @@ export default function AdminOverviewPage() {
       </div>
 
       <p className="text-[11px] leading-relaxed text-[#3d5248]/90">
-        SAM Assessment Application provides indicative sustainability and certification readiness intelligence. This
+        ESGroww  Assessment Application provides indicative sustainability and certification readiness intelligence. This
         console does not replace statutory audits, accredited certification reviews, or legal compliance advice.
       </p>
     </div>

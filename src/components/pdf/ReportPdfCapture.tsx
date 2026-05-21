@@ -1,9 +1,10 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { KPIBenchmark } from "@/lib/kpiUtils";
 import type { DownloadReportData } from "@/components/shared/DownloadReportButton";
+import { formatWithUnit, UNIT } from "@/lib/calculations";
 
 import {
   A4_PORTRAIT_CSS_PX,
@@ -219,6 +220,7 @@ function kpiImpactStyle(kpi: KPIBenchmark) {
 }
 
 export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
+  const [generatedLabel, setGeneratedLabel] = useState("");
   const score = Math.round(data.overallScore);
   const orgName = data.orgName ?? "Organization";
   const categoryScores = data.categoryScores ?? { energy: 0, water: 0, waste: 0, governance: 0 };
@@ -231,18 +233,24 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
 
   const annEl = data.annualizedValues.electricity ?? 0;
   const annWa = data.annualizedValues.water ?? 0;
+  const annElDisplay = data.formattedAnnualizedValues?.electricity ?? `${formatWithUnit(annEl, UNIT.ELECTRICITY)}/yr`;
+  const annWaDisplay = data.formattedAnnualizedValues?.water ?? `${formatWithUnit(annWa, UNIT.WATER)}/yr`;
   const sqft = data.builtUpArea ?? data.orgBuiltUpArea ?? 0;
   const renPct = data.percentages?.renewableEnergy ?? 0;
   const wRePct = data.percentages?.waterRecycling ?? 0;
   const wsePct = data.percentages?.wasteRecycling ?? 0;
 
-  const generatedLabel = new Date().toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  useEffect(() => {
+    setGeneratedLabel(
+      new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date())
+    );
+  }, []);
 
   const evalKpis = data.evaluatedKpis || {
     energyIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
@@ -353,7 +361,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
               <p style={typeMeta}>Readiness summary</p>
               <p style={{ margin: "12px 0 0", fontSize: 22, fontWeight: 800, color: stageColor(score) }}>{data.readinessStage}</p>
               <p style={{ margin: "10px 0 0", fontSize: 11, color: BRAND.muted, lineHeight: 1.5 }}>
-                Portfolio carbon footprint <strong style={{ color: BRAND.ink }}>{data.totalEmissions.toFixed(1)} tCO₂e</strong> / yr
+                Portfolio carbon footprint <strong style={{ color: BRAND.ink }}>{data.formattedEmissions?.total ?? `${data.totalEmissions.toFixed(1)} tCO₂e`}</strong> / yr
                 (indicative model). Scores reflect uploaded operational evidence and SAM methodology — not a certification outcome.
               </p>
               <div style={{ marginTop: grid8 * 2, paddingTop: grid8 * 2, borderTop: `1px solid ${BRAND.line}` }}>

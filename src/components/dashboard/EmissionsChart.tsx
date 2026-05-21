@@ -1,13 +1,16 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { formatWithUnit, UNIT } from "@/lib/calculations";
 
 interface EmissionsData {
-  scope2Emissions: string;
-  dieselEmissions: string;
-  transportEmissions: string;
-  refrigerantEmissions: string;
-  totalEmissions: string;
+  scope2EmissionsKg: number;
+  dieselEmissionsKg: number;
+  transportEmissionsKg: number;
+  refrigerantEmissionsKg: number;
+  // Optional formatted total for display (preferred)
+  totalEmissionsFormatted?: string;
+  totalEmissionsKg?: number;
 }
 
 interface Props {
@@ -16,26 +19,10 @@ interface Props {
 
 export function EmissionsChart({ emissions }: Props) {
   const data = [
-    {
-      name: "Scope 2",
-      value: parseFloat(emissions.scope2Emissions),
-      color: "#10b981",
-    },
-    {
-      name: "Diesel",
-      value: parseFloat(emissions.dieselEmissions),
-      color: "#0ea5e9",
-    },
-    {
-      name: "Transport",
-      value: parseFloat(emissions.transportEmissions),
-      color: "#f59e0b",
-    },
-    {
-      name: "Refrigerants",
-      value: parseFloat(emissions.refrigerantEmissions),
-      color: "#8b5cf6",
-    },
+    { name: "Scope 2", value: emissions.scope2EmissionsKg, color: "#10b981" },
+    { name: "Diesel", value: emissions.dieselEmissionsKg, color: "#0ea5e9" },
+    { name: "Transport", value: emissions.transportEmissionsKg, color: "#f59e0b" },
+    { name: "Refrigerants", value: emissions.refrigerantEmissionsKg, color: "#8b5cf6" },
   ];
 
   return (
@@ -66,7 +53,7 @@ export function EmissionsChart({ emissions }: Props) {
               }}
             />
             <Tooltip
-              formatter={(value) => [`${Number(value ?? 0).toFixed(2)} kg CO₂e`, ""]}
+              formatter={(value) => [formatWithUnit(Number(value ?? 0), UNIT.EMISSIONS_KG), ""]}
               labelStyle={{ color: "#374151" }}
               contentStyle={{
                 backgroundColor: "#ffffff",
@@ -84,7 +71,7 @@ export function EmissionsChart({ emissions }: Props) {
       </div>
 
       <div className="mt-4 text-sm text-slate-500">
-        Total Emissions: {emissions.totalEmissions} kg CO₂e
+        Total Emissions: {emissions.totalEmissionsFormatted ?? formatWithUnit(emissions.totalEmissionsKg ?? 0, UNIT.EMISSIONS_KG)}
       </div>
     </div>
   );

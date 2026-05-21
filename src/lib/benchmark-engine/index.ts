@@ -48,7 +48,7 @@ export function calculateBenchmarkScores(
     wastePerBed: 1200,
   };
 
-  const sectorBenchmarks = config.benchmarks[params.industry] || {};
+  const sectorBenchmarks = config?.benchmarks?.[params.industry] || {};
 
   const benchmarks = {
     renewablePercentage: sectorBenchmarks["renewablePercentage"] ?? defaultBenchmarks.renewablePercentage,

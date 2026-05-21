@@ -6,16 +6,25 @@ import { getESGConfiguration } from "@/lib/config-engine";
 import {
   annualizeElectricity,
   annualizeFuel,
-  annualizeValue,
+} from "@/lib/esgCalculations";
+import {
   calculateDieselEmissions,
   calculateRefrigerantEmissions,
-  calculateRenewablePercentage,
   calculateScope2Emissions,
   calculateTransportEmissions,
+} from "@/lib/emissions-engine";
+import {
+  calculateRenewablePercentage,
   calculateWaterRecyclingPercentage,
   calculateWasteDiversionPercentage,
 } from "@/lib/esgCalculations";
+import { formatWithUnit, UNIT } from "@/lib/calculations";
 import { BRD_MIN_MONTHS_FOR_ANNUALIZATION } from "@/lib/upload/brdConstants";
+import {
+  annualizeValue,
+  calculateESGReadinessScore,
+  determineReadinessStage,
+} from "@/lib/calculation-engine";
 
 function annualizationDenominator(distinctMonths: number): number {
   return distinctMonths >= BRD_MIN_MONTHS_FOR_ANNUALIZATION ? distinctMonths : 0;
@@ -27,7 +36,6 @@ export async function getSummaryData(assessmentCycleId?: string) {
   try {
     if (!assessmentCycleId) {
       const cookieStore = await cookies();
-      assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
     }
     /* ===================================== */
     /* GET HOSPITAL                          */
@@ -37,9 +45,6 @@ export async function getSummaryData(assessmentCycleId?: string) {
 
     const hospital = await prisma.hospital.findFirst({
     select: {
-    hospitalName: true,
-    industry: true,
-    numberOfBeds: true,
     builtUpArea: true,
     electricityData: dataCondition ? { ...dataCondition, select: { electricityKwh: true, renewableKwh: true, month: true, year: true } } : { select: { electricityKwh: true, renewableKwh: true, month: true, year: true } },
     waterData: dataCondition ? { ...dataCondition, select: { totalWaterConsumptionKl: true, recycledWaterKl: true, month: true, year: true } } : { select: { totalWaterConsumptionKl: true, recycledWaterKl: true, month: true, year: true } },
@@ -303,10 +308,19 @@ export async function getSummaryData(assessmentCycleId?: string) {
   /* ===================================== */
 
   const environmentalScore =
-    Math.max(
-      0,
-      100 -
-        totalEmissions / 1000
+    Math.round(
+      Math.max(
+        0,
+        Math.min(
+          100,
+          (
+            renewablePercentage * 0.35 +
+            waterRecyclePercentage * 0.25 +
+            recyclableWastePercentage * 0.25 +
+            Math.max(0, 100 - totalEmissions / 1000) * 0.15
+          )
+        )
+      )
     );
 
   const socialScore =
@@ -321,29 +335,28 @@ export async function getSummaryData(assessmentCycleId?: string) {
       : 45;
 
   const overallScore =
-    Math.round(
-      (environmentalScore +
-        socialScore +
-        governanceScore) /
-        3
-    );
+    calculateESGReadinessScore({
+      renewablePercentage,
+      waterRecyclingPercentage: waterRecyclePercentage,
+      wasteDiversionPercentage: recyclableWastePercentage,
+      hasEsgPolicy: !!hospital.governanceData?.hasEsgPolicy,
+      hasAuditReports: false,
+      coverageRatio: confidence / 100,
+    }, config);
+
+  function safeNumber(n: any, fallback = 0) {
+    return Number.isFinite(Number(n)) ? Number(n) : fallback;
+  }
 
   /* ===================================== */
   /* READINESS STAGE                       */
   /* ===================================== */
 
-  let readinessStage =
-    "Early Stage";
-
-  if (overallScore >= 80) {
-    readinessStage =
-      "Advanced";
-  } else if (
-    overallScore >= 60
-  ) {
-    readinessStage =
-      "Moderate";
-  }
+  const readinessStage = determineReadinessStage({
+    completeness: confidence,
+    confidence: confidence / 100,
+    certificationReady: overallScore >= 70,
+  }, config);
 
   /* ===================================== */
   /* QUALITY CHECKS                        */
@@ -430,6 +443,15 @@ export async function getSummaryData(assessmentCycleId?: string) {
       totalEmissions,
     },
 
+    formattedTotals: {
+      totalElectricity: formatWithUnit(totalElectricity, UNIT.ELECTRICITY),
+      totalWater: formatWithUnit(totalWater, UNIT.WATER),
+      totalDiesel: formatWithUnit(totalDiesel, UNIT.DIESEL),
+      totalTransportFuel: formatWithUnit(totalTransportFuel, UNIT.DIESEL),
+      totalWaste: formatWithUnit(totalWaste, UNIT.WASTE),
+      totalEmissions: formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG),
+    },
+
     percentages: {
       renewablePercentage,
       waterRecyclePercentage,
@@ -437,16 +459,10 @@ export async function getSummaryData(assessmentCycleId?: string) {
     },
 
     scores: {
-      environmentalScore:
-        Math.round(
-          environmentalScore
-        ),
-
-      socialScore,
-
-      governanceScore,
-
-      overallScore,
+      environmentalScore: Math.round(safeNumber(environmentalScore, 0)),
+      socialScore: Math.round(safeNumber(socialScore, 0)),
+      governanceScore: Math.round(safeNumber(governanceScore, 0)),
+      overallScore: Math.round(safeNumber(overallScore, 0)),
     },
 
     confidence,
@@ -493,6 +509,21 @@ export async function getSummaryData(assessmentCycleId?: string) {
         Math.round(
           annualizedRefrigerantEmissions
         ),
+    },
+
+    formattedAnnualizedValues: {
+      annualizedElectricity: formatWithUnit(annualizedElectricity, UNIT.ELECTRICITY),
+      annualizedDiesel: formatWithUnit(annualizedDiesel, UNIT.DIESEL),
+      annualizedTransportFuel: formatWithUnit(annualizedTransportFuel, UNIT.DIESEL),
+      annualizedRefrigerantEmissions: formatWithUnit(annualizedRefrigerantEmissions, UNIT.REFRIGERANT),
+    },
+
+    formattedEmissions: {
+      electricityEmissions: formatWithUnit(Math.round(electricityEmissions), UNIT.EMISSIONS_KG),
+      dieselEmissions: formatWithUnit(Math.round(dieselEmissions), UNIT.EMISSIONS_KG),
+      transportEmissions: formatWithUnit(Math.round(transportEmissions), UNIT.EMISSIONS_KG),
+      refrigerantEmissions: formatWithUnit(Math.round(refrigerantEmissions), UNIT.EMISSIONS_KG),
+      total: formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG),
     },
 
     checks,

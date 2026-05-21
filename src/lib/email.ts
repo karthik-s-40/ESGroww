@@ -71,7 +71,7 @@ export async function sendVerificationEmail({
 
         <p style="color:#334155;line-height:1.6;">
           Thank you for joining <strong>ESGroww</strong>, the sustainability readiness intelligence
-          platform aligned with the SAM Assessment methodology.
+          platform aligned with the ESGroww  Assessment methodology.
         </p>
 
         <p style="color:#334155;line-height:1.6;">
@@ -95,7 +95,7 @@ export async function sendVerificationEmail({
         </a>
 
         <p style="margin-top:28px;font-size:12px;color:#64748b;line-height:1.5;">
-          SAM Assessment Application provides indicative sustainability and certification readiness
+          ESGroww  Assessment Application provides indicative sustainability and certification readiness
           intelligence. This platform does not replace official certification audits, regulatory
           reviews, accredited assessments, or legal compliance advice. All scores and recommendations
           are indicative only.

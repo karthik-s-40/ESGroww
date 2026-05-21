@@ -1,4 +1,6 @@
 import type { ESGConfiguration } from "../config-engine";
+import { annualizeValue as centralAnnualizeValue } from "../calculations";
+import { calculateCompleteness as centralCalculateCompleteness, getConfidenceModifier } from "../calculations";
 
 export function calculateESGReadinessScore(params: {
   renewablePercentage: number;
@@ -7,15 +9,15 @@ export function calculateESGReadinessScore(params: {
   hasEsgPolicy: boolean;
   hasAuditReports: boolean;
   coverageRatio?: number;
-}, config: ESGConfiguration) {
+}, config?: ESGConfiguration) {
   let score = 0;
   
-  score += params.renewablePercentage * (config.scoringWeights["renewable"] ?? 0.25);
-  score += params.waterRecyclingPercentage * (config.scoringWeights["water_recycling"] ?? 0.2);
-  score += params.wasteDiversionPercentage * (config.scoringWeights["waste_diversion"] ?? 0.2);
+  score += params.renewablePercentage * (config?.scoringWeights?.["renewable"] ?? 0.25);
+  score += params.waterRecyclingPercentage * (config?.scoringWeights?.["water_recycling"] ?? 0.2);
+  score += params.wasteDiversionPercentage * (config?.scoringWeights?.["waste_diversion"] ?? 0.2);
 
-  if (params.hasEsgPolicy) score += (config.scoringWeights["esg_policy"] ?? 15);
-  if (params.hasAuditReports) score += (config.scoringWeights["audit_reports"] ?? 20);
+  if (params.hasEsgPolicy) score += (config?.scoringWeights?.["esg_policy"] ?? 15);
+  if (params.hasAuditReports) score += (config?.scoringWeights?.["audit_reports"] ?? 20);
 
   const normalizedCoverage = Math.min(Math.max(params.coverageRatio ?? 1, 0), 1);
   score *= normalizedCoverage;
@@ -24,7 +26,7 @@ export function calculateESGReadinessScore(params: {
 }
 
 export function calculateCategoryCompleteness(monthsUploaded: number): number {
-  return Math.min((monthsUploaded / 12) * 100, 100);
+  return centralCalculateCompleteness(monthsUploaded).completenessPct;
 }
 
 export function calculateOverallCompleteness(params: {
@@ -43,7 +45,17 @@ export function calculateOverallCompleteness(params: {
 }
 
 // TODO: Replace with DB driven logic if confidence logic is moved to DB (we have ConfidenceThreshold table)
-export function calculateConfidenceScore(monthsUploaded: number): number {
+export function calculateConfidenceScore(monthsUploaded: number, config?: any): number {
+  // If DB-driven confidence thresholds are supplied in config, use them
+  if (config?.confidenceThresholds && Array.isArray(config.confidenceThresholds)) {
+    // expecting array of { monthsMin, modifier }
+    const months = Math.max(0, Math.floor(monthsUploaded));
+    for (const entry of config.confidenceThresholds) {
+      if (months >= entry.monthsMin) return entry.modifier;
+    }
+  }
+
+  // Fallback to existing mapping for backward compatibility
   if (monthsUploaded <= 0) return 0;
   if (monthsUploaded === 1) return 0.18;
   if (monthsUploaded === 2) return 0.34;
@@ -64,8 +76,7 @@ export function calculateConfidenceLabel(confidence: number): string {
 }
 
 export function annualizeValue(uploadedTotal: number, monthsUploaded: number): number {
-  if (monthsUploaded === 0) return 0;
-  return (uploadedTotal / monthsUploaded) * 12;
+  return centralAnnualizeValue(uploadedTotal, monthsUploaded).annualizedValue;
 }
 
 export const annualizeElectricity = annualizeValue;
@@ -81,7 +92,7 @@ export function calculateCertificationReadiness(params: {
   completeness: number;
   confidence: number;
   benchmarkScores: Record<string, number>;
-}, config: ESGConfiguration): Record<string, boolean> {
+}, config?: ESGConfiguration): Record<string, boolean> {
   const { renewablePercentage, waterRecyclingPercentage, wasteDiversionPercentage, governanceScore, completeness, confidence, benchmarkScores } = params;
   
   // Use config thresholds if they exist, else fallback to old hardcoded
@@ -206,6 +217,8 @@ export function identifyStrengthsAndGaps(params: {
   if (params.completeness < 70) gaps.push({ text: "Incomplete ESG data.", severity: "Medium" });
 
   if (strengths.length === 0) strengths.push("Data tracking initiated.");
+  // Expand the electricity strength message for richer reporting
+  strengths[0] = strengths[0].replace("Strong electricity data tracking.", "Strong electricity data tracking — consistent monthly data available.");
   if (gaps.length === 0) gaps.push({ text: "Continue monitoring metrics.", severity: "Low" });
 
   return { strengths: strengths.slice(0, 4), gaps: gaps.slice(0, 4) };

@@ -5,6 +5,7 @@ import { PageWrapper } from "@/components/layout/page-wrapper";
 import BentoGrid from "@/components/shared/BentoGrid";
 import { PageTitle, SectionTitle, CardTitle, BodyText, MetricValue, HelperText } from "@/components/ui/typography";
 import { Info } from "lucide-react";
+import { formatWithUnit, UNIT } from "@/lib/calculations";
 
 export const dynamic = "force-dynamic";
 
@@ -21,10 +22,10 @@ export default async function SummaryPage() {
   try {
     const data = await getSummaryData();
 
-  const environmentalScore = data.scores.environmentalScore;
-  const socialScore        = data.scores.socialScore;
-  const governanceScore    = data.scores.governanceScore;
-  const overallScore       = data.scores.overallScore;
+  const environmentalScore = Number(data.scores.environmentalScore ?? 0);
+  const socialScore        = Number(data.scores.socialScore ?? 0);
+  const governanceScore    = Number(data.scores.governanceScore ?? 0);
+  const overallScore       = Number(data.scores.overallScore ?? 0);
   const readiness          = data.readinessStage;
 
   const confidence = data.confidence;
@@ -35,6 +36,7 @@ export default async function SummaryPage() {
       : 0;
 
   const scoreImpact = (delta: number) => {
+    if (!Number.isFinite(delta)) return "+0 ESG";
     const magnitude = Math.max(1, Math.round(Math.abs(delta) / 5));
     return `${delta >= 0 ? "+" : "-"}${magnitude} ESG`;
   };
@@ -104,7 +106,7 @@ export default async function SummaryPage() {
             <span className="text-xs font-medium text-emerald-100 uppercase tracking-wide">ESG Readiness Score</span>
             <InfoTooltip text="Calculated using Environmental, Social, and Governance scores derived from emissions, water recycling, and reporting completeness." />
           </div>
-          <MetricValue className="text-white text-4xl mt-1">{overallScore}</MetricValue>
+          <MetricValue className="text-white text-4xl mt-1">{Math.round(overallScore)}</MetricValue>
           <HelperText className="text-emerald-100 mt-0.5 font-medium">{readiness}</HelperText>
         </div>
       </div>
@@ -114,11 +116,11 @@ export default async function SummaryPage() {
         <ScoreBreakdownCard title="ENV Score" score={environmentalScore} />
         <ScoreBreakdownCard title="SOC Score" score={socialScore} />
         <ScoreBreakdownCard title="GOV Score" score={governanceScore} />
-        <MetricCard label="Electricity" value={`${Math.round(data.totals.totalElectricity)} kWh`} />
-        <MetricCard label="Diesel" value={`${Math.round(data.totals.totalDiesel)} L`} />
-        <MetricCard label="Water" value={`${Math.round(data.totals.totalWater)} KL`} />
-        <MetricCard label="Waste" value={`${Math.round(data.totals.totalWaste)} kg`} />
-        <MetricCard label="Total CO₂" value={`${Math.round(totalEmissions)} kg`} />
+        <MetricCard label="Electricity" value={data.formattedTotals?.totalElectricity ?? formatWithUnit(data.totals.totalElectricity, UNIT.ELECTRICITY)} />
+        <MetricCard label="Diesel" value={data.formattedTotals?.totalDiesel ?? formatWithUnit(data.totals.totalDiesel, UNIT.DIESEL)} />
+        <MetricCard label="Water" value={data.formattedTotals?.totalWater ?? formatWithUnit(data.totals.totalWater, UNIT.WATER)} />
+        <MetricCard label="Waste" value={data.formattedTotals?.totalWaste ?? formatWithUnit(data.totals.totalWaste, UNIT.WASTE)} />
+        <MetricCard label="Total CO₂" value={data.formattedTotals?.totalEmissions ?? formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG)} />
       </div>
 
       {/* BENTO GRID CONTENT */}
@@ -173,13 +175,29 @@ export default async function SummaryPage() {
                 <InfoTooltip text="Calculated from annualized operational activity using shared emission factors." />
               </div>
               <div className="space-y-2">
-                <EmissionRow label="Electricity" detail={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * 0.82)} kgCO₂e`} />
-                <EmissionRow label="Diesel" detail={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L`} value={`${data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * 2.68)} kgCO₂e`} />
-                <EmissionRow label="Transport" detail={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L`} value={`${data.emissions?.transportEmissions ?? 0} kgCO₂e`} />
-                <EmissionRow label="Refrigerants" detail={`${Math.round(data.emissions?.annualizedRefrigerantEmissions ?? 0)} kg leaked`} value={`${data.emissions?.refrigerantEmissions ?? 0} kgCO₂e`} />
+                <EmissionRow
+                  label="Electricity"
+                  detail={data.formattedAnnualizedValues?.annualizedElectricity ?? formatWithUnit(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity, UNIT.ELECTRICITY)}
+                  value={data.formattedEmissions?.electricityEmissions ?? formatWithUnit(data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * 0.82), UNIT.EMISSIONS_KG)}
+                />
+                <EmissionRow
+                  label="Diesel"
+                  detail={data.formattedAnnualizedValues?.annualizedDiesel ?? formatWithUnit(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel, UNIT.DIESEL)}
+                  value={data.formattedEmissions?.dieselEmissions ?? formatWithUnit(data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * 2.68), UNIT.EMISSIONS_KG)}
+                />
+                <EmissionRow
+                  label="Transport"
+                  detail={data.formattedAnnualizedValues?.annualizedTransportFuel ?? formatWithUnit(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel, UNIT.DIESEL)}
+                  value={data.formattedEmissions?.transportEmissions ?? formatWithUnit(data.emissions?.transportEmissions ?? 0, UNIT.EMISSIONS_KG)}
+                />
+                <EmissionRow
+                  label="Refrigerants"
+                  detail={(data.formattedAnnualizedValues?.annualizedRefrigerantEmissions ?? formatWithUnit(data.emissions?.annualizedRefrigerantEmissions ?? 0, UNIT.REFRIGERANT)) + " leaked"}
+                  value={data.formattedEmissions?.refrigerantEmissions ?? formatWithUnit(data.emissions?.refrigerantEmissions ?? 0, UNIT.EMISSIONS_KG)}
+                />
                 <div className="pt-2 mt-2 border-t border-border flex justify-between items-center font-bold">
                   <span className="text-sm text-foreground">Total</span>
-                  <span className="text-sm text-emerald-700">{totalEmissions} kgCO₂e</span>
+                  <span className="text-sm text-emerald-700">{data.formattedEmissions?.total ?? formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG)}</span>
                 </div>
               </div>
             </div>
@@ -234,11 +252,12 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 }
 
 function ScoreBreakdownCard({ title, score }: { title: string; score: number }) {
+  const displayScore = Number.isFinite(score) ? Math.round(score) : 0;
   return (
     <div className="bg-white rounded-xl border border-border p-3 shadow-sm flex flex-col justify-center">
       <div className="flex items-center justify-between">
         <HelperText className="font-semibold">{title}</HelperText>
-        <span className="text-sm font-bold text-emerald-600">{score}</span>
+        <span className="text-sm font-bold text-emerald-600">{displayScore}</span>
       </div>
       <div className="w-full bg-slate-100 rounded-full h-1.5 mt-1.5 overflow-hidden">
         <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${score}%` }} />
@@ -248,12 +267,13 @@ function ScoreBreakdownCard({ title, score }: { title: string; score: number }) 
 }
 
 function CoverageBar({ label, value }: { label: string; value: number }) {
-  const percentage = (value / 12) * 100;
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const percentage = (safeValue / 12) * 100;
   return (
     <div>
       <div className="flex items-center justify-between mb-0.5">
         <span className="text-xs font-medium text-foreground">{label}</span>
-        <span className="text-[10px] text-muted-foreground">{value}/12</span>
+        <span className="text-[10px] text-muted-foreground">{safeValue}/12</span>
       </div>
       <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
         <div className="bg-emerald-500 h-full rounded-full transition-all" style={{ width: `${percentage}%` }} />
