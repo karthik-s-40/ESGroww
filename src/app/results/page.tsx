@@ -533,7 +533,9 @@ export default function ResultsPage() {
           </div>
           <div className="mt-2.5 bg-blue-50/50 border border-blue-200 rounded-xl p-2.5">
             <p className="m-0 text-[10px] text-blue-900 font-semibold leading-relaxed">
-              <strong className="font-bold text-blue-900">Executive Summary:</strong> {data.orgName} demonstrates {score >= 75 ? "strong" : score >= 60 ? "moderate" : "foundational"} sustainability fundamentals. Strong potential for {certEntries.filter((c) => c.score >= 60).map((c) => c.name).slice(0, 2).join(", ")}. Priority: renewable energy integration and governance formalization.
+              <strong className="font-bold text-blue-900">Executive Summary:</strong> {data.orgName} demonstrates {score >= 75 ? "strong" : score >= 60 ? "moderate" : "foundational"} sustainability fundamentals.
+              {certEntries.filter((c) => c.score >= 60).length > 0 ? ` Strong potential for ${certEntries.filter((c) => c.score >= 60).map((c) => formatCertName(c.name)).slice(0, 2).join(" and ")}.` : ""}
+              {(data.gaps && data.gaps.length > 0) ? ` Immediate priorities include ${data.gaps.slice(0, 1).map(g => g.text.toLowerCase()).join("")}.` : " Keep up the good work."}
             </p>
           </div>
         </div>
@@ -543,7 +545,7 @@ export default function ResultsPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="m-0 text-sm font-extrabold text-slate-900 uppercase tracking-wider">KPI Scorecards</p>
-              <p className="m-0 mt-0.5 text-xs text-muted-foreground">Benchmarked against healthcare industry standards</p>
+              <p className="m-0 mt-0.5 text-xs text-muted-foreground">Benchmarked against {data.sector?.toLowerCase() ?? "healthcare"} industry standards</p>
             </div>
             <div className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
               {kpiItems.length} Metrics Analyzed

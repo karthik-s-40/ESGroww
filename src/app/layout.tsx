@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Lexend } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AppChrome } from "@/components/layout/AppChrome";
 import { ConditionalChatbot } from "@/components/chatbot/ConditionalChatbot";
 
-const lexend = Lexend({
-  variable: "--font-lexend",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${lexend.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex h-full flex-col bg-background font-sans text-foreground">
         <AppChrome>{children}</AppChrome>
         <ConditionalChatbot />

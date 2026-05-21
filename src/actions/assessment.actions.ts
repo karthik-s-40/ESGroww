@@ -1029,6 +1029,8 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       },
     },
  
+    evaluatedKpis,
+    
     // Add percentage metrics needed for KPI calculations
     percentages: {
       renewableEnergy:
