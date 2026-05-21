@@ -63,6 +63,8 @@ model User {
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   hospital                Hospital  @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId])
 }
 
 model AssessmentCycle {
@@ -279,6 +281,9 @@ model ESGScore {
   assessmentCycleId String?
   assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
   hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId, createdAt])
+  @@index([assessmentCycleId])
 }
 
 model AssessmentHistory {
@@ -313,6 +318,8 @@ model ValidationResult {
   assessmentCycleId String?
   assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
   hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId, category, status])
 }
 
 model CertificationScore {
@@ -329,6 +336,9 @@ model CertificationScore {
   assessmentCycleId    String?
   assessmentCycle      AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
   hospital             Hospital         @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId])
+  @@index([assessmentCycleId])
 }
 
 model CalculatedMetric {
@@ -344,6 +354,9 @@ model CalculatedMetric {
   assessmentCycleId  String?
   assessmentCycle    AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
   hospital           Hospital         @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId])
+  @@index([hospitalId, metricName])
 }
 
 model EmissionsSummary {
@@ -358,6 +371,9 @@ model EmissionsSummary {
   assessmentCycleId String?
   assessmentCycle   AssessmentCycle? @relation(fields: [assessmentCycleId], references: [id], onDelete: Cascade)
   hospital          Hospital         @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId])
+  @@index([assessmentCycleId])
 }
 
 model CertificationApplicability {
