@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { confidenceFromDistinctMonths } from "@/lib/admin/confidence";
 
-async function categoryBlock(hospitalId: string, thresholds: Awaited<ReturnType<typeof prisma.confidenceThreshold.findMany>>) {
+async function categoryBlock(hospitalId: string, assessmentCycleId: string | null, thresholds: Awaited<ReturnType<typeof prisma.confidenceThreshold.findMany>>) {
+  const whereClause = assessmentCycleId ? { hospitalId, assessmentCycleId } : { hospitalId };
   const [elec, water, waste, fuel, ref, transport] = await Promise.all([
-    prisma.electricityData.count({ where: { hospitalId } }),
-    prisma.waterData.count({ where: { hospitalId } }),
-    prisma.wasteData.count({ where: { hospitalId } }),
-    prisma.fuelData.count({ where: { hospitalId } }),
-    prisma.refrigerantData.count({ where: { hospitalId } }),
-    prisma.transportData.count({ where: { hospitalId } }),
+    prisma.electricityData.count({ where: whereClause }),
+    prisma.waterData.count({ where: whereClause }),
+    prisma.wasteData.count({ where: whereClause }),
+    prisma.fuelData.count({ where: whereClause }),
+    prisma.refrigerantData.count({ where: whereClause }),
+    prisma.transportData.count({ where: whereClause }),
   ]);
 
   const rows = [
@@ -44,6 +45,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const hospitalId = searchParams.get("hospitalId");
+    const assessmentCycleId = searchParams.get("assessmentCycleId");
     const thresholds = await prisma.confidenceThreshold.findMany({ orderBy: { monthsMin: "asc" } });
 
     const hospitals = await prisma.hospital.findMany({
@@ -56,7 +58,7 @@ export async function GET(req: Request) {
         hospitals.map(async (h) => ({
           hospitalId: h.id,
           hospitalName: h.hospitalName,
-          categories: await categoryBlock(h.id, thresholds),
+          categories: await categoryBlock(h.id, assessmentCycleId, thresholds),
         }))
       );
       return NextResponse.json({ hospitals, hospitalId: "all", perHospital: blocks });
@@ -71,29 +73,31 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Hospital not found" }, { status: 404 });
     }
 
+    const whereClause = assessmentCycleId ? { hospitalId, assessmentCycleId } : { hospitalId };
+
     const [metrics, emissions, validations, scores] = await Promise.all([
       prisma.calculatedMetric.findMany({
-        where: { hospitalId },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         take: 80,
       }),
       prisma.emissionsSummary.findMany({
-        where: { hospitalId },
+        where: whereClause,
         orderBy: [{ scope: "asc" }, { source: "asc" }],
       }),
       prisma.validationResult.findMany({
-        where: { hospitalId },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         take: 100,
       }),
       prisma.eSGScore.findMany({
-        where: { hospitalId },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         take: 1,
       }),
     ]);
 
-    const categories = await categoryBlock(hospitalId, thresholds);
+    const categories = await categoryBlock(hospitalId, assessmentCycleId, thresholds);
 
     return NextResponse.json({
       hospitals,

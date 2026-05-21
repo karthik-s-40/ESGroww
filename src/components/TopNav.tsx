@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import BackButton from "@/components/BackButton";
+import { AssessmentSelector } from "@/components/dashboard/AssessmentSelector";
 
 export default function TopNav() {
   const pathname = usePathname();
@@ -14,7 +15,7 @@ export default function TopNav() {
       if (!res.ok) return;
       const data = await res.json();
       if (data?.authenticated) {
-        router.push("/upload");
+        router.push("/esg-readiness-platform");
       }
     } catch (e) {
       // ignore
@@ -39,6 +40,10 @@ export default function TopNav() {
         <button type="button" onClick={handleHomeClick} aria-label="ESGroww home" className="text-lg font-bold tracking-tight text-primary sm:text-xl p-0">
           ESGroww
         </button>
+
+        <div className="ml-auto">
+          <AssessmentSelector />
+        </div>
       </div>
     </header>
   );

@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { AppError, ERROR_MESSAGES } from "@/lib/errors";
+import { getAdminCalculationFactors } from "@/lib/adminConfig";
 import {
   annualizeElectricity,
   annualizeFuel,
@@ -19,51 +21,53 @@ function annualizationDenominator(distinctMonths: number): number {
   return distinctMonths >= BRD_MIN_MONTHS_FOR_ANNUALIZATION ? distinctMonths : 0;
 }
 
-export async function getSummaryData() {
+import { cookies } from "next/headers";
 
+export async function getSummaryData(assessmentCycleId?: string) {
+  if (!assessmentCycleId) {
+    const cookieStore = await cookies();
+    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+  }
   /* ===================================== */
   /* GET HOSPITAL                          */
   /* ===================================== */
 
   const latestUpload =
   await prisma.upload.findFirst({
+    where: assessmentCycleId ? { assessmentCycleId } : undefined,
     orderBy: {
       createdAt: "desc",
     },
   });
 
 if (!latestUpload) {
-  throw new Error("No uploads found");
+  throw new AppError("No uploads found", 404);
 }
 
-const hospital =
-  await prisma.hospital.findUnique({
-    where: {
-      id: latestUpload.hospitalId,
-    },
+const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
 
-    include: {
-      electricityData: true,
-      waterData: true,
-      fuelData: true,
-      wasteData: true,
-      refrigerantData: true,
-      transportData: true,
-      governanceData: true,
-    },
-  });
+const hospital = await prisma.hospital.findUnique({
+  where: { id: latestUpload.hospitalId },
+  select: {
+    hospitalName: true,
+    industry: true,
+    numberOfBeds: true,
+    builtUpArea: true,
+    electricityData: dataCondition ? { ...dataCondition, select: { electricityKwh: true, renewableKwh: true, month: true, year: true } } : { select: { electricityKwh: true, renewableKwh: true, month: true, year: true } },
+    waterData: dataCondition ? { ...dataCondition, select: { waterKl: true, recycledWaterKl: true, month: true, year: true } } : { select: { waterKl: true, recycledWaterKl: true, month: true, year: true } },
+    fuelData: dataCondition ? { ...dataCondition, select: { dgDieselLitres: true, month: true, year: true } } : { select: { dgDieselLitres: true, month: true, year: true } },
+    wasteData: dataCondition ? { ...dataCondition, select: { biomedicalWasteKg: true, recyclableWasteKg: true, landfillWasteKg: true, month: true, year: true } } : { select: { biomedicalWasteKg: true, recyclableWasteKg: true, landfillWasteKg: true, month: true, year: true } },
+    refrigerantData: dataCondition ? { ...dataCondition, select: { refrigerantType: true, refrigerantLeakKg: true, month: true, year: true } } : { select: { refrigerantType: true, refrigerantLeakKg: true, month: true, year: true } },
+    transportData: dataCondition ? { ...dataCondition, select: { ambulanceFuelLitres: true, month: true, year: true } } : { select: { ambulanceFuelLitres: true, month: true, year: true } },
+    governanceData: { select: { hasEsgPolicy: true } },
+  },
+});
 
 if (!hospital) {
-  throw new Error(
-    "Hospital not found"
-  );
+  throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
 }
 
-  if (!hospital) {
-    throw new Error(
-      "No hospital found"
-    );
-  }
+  const { factors } = await getAdminCalculationFactors();
 
   /* ===================================== */
   /* MONTH COVERAGE                        */
@@ -189,7 +193,8 @@ if (!hospital) {
         sum +
         calculateRefrigerantEmissions(
           item.refrigerantType,
-          item.refrigerantLeakKg
+          item.refrigerantLeakKg,
+          factors
         ),
       0
     );
@@ -263,17 +268,20 @@ if (!hospital) {
 
   const electricityEmissions =
     calculateScope2Emissions(
-      annualizedElectricity
+      annualizedElectricity,
+      factors
     );
 
   const dieselEmissions =
     calculateDieselEmissions(
-      annualizedDiesel
+      annualizedDiesel,
+      factors
     );
 
   const transportEmissions =
     calculateTransportEmissions(
-      annualizedTransportFuel
+      annualizedTransportFuel,
+      factors
     );
 
   const refrigerantEmissions =

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Check, Zap, BarChart2, Map, Building2, Factory, GraduationCap, Shirt, Utensils, Truck, Globe, Building, Activity } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // ---------------------------------------------------------------------------
 // Tiny utility: fade-up observer hook
@@ -32,13 +33,7 @@ function useFadeUp() {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-[#004958]/10 text-[#004958] border border-[#004958]/20">
-      {children}
-    </span>
-  );
-}
+// ---------------------------------------------------------------------------
 
 function StepCard({
   number,

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function CertificationReadiness({ certifications }: { certifications: any[] }) {
+export function CertificationReadiness({ certifications }: { certifications: Array<{ name: string; readiness: string }> }) {
   return (
     <Card className="border-slate-200">
       <CardHeader className="pb-2 border-b mb-3">

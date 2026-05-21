@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 interface GenericLineChartProps {
-  data: Array<Record<string, any>>;
+  data: Array<Record<string, number | string>>;
   dataKeys: Array<{
     key: string;
     label: string;
@@ -24,16 +24,16 @@ interface GenericLineChartProps {
   xAxisLabel?: string;
   yAxisLabel?: string;
   margin?: { top: number; right: number; left: number; bottom: number };
-  valueFormatter?: (value: any) => string;
+  valueFormatter?: (value: number | string) => string;
   domain?: [number, number];
 }
 
-const CustomLineTooltip = ({ active, payload, label, valueFormatter }: any) => {
+const CustomLineTooltip = ({ active, payload, label, valueFormatter }: { active?: boolean; payload?: Array<{ name: string; value: number | string; color?: string; payload?: Record<string, string> }>; label?: string; valueFormatter: (value: number | string) => string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white rounded-lg border-2 border-blue-200 shadow-lg p-3">
         <p className="text-sm font-semibold text-gray-800">{payload[0]?.payload?.["name"] || label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index: number) => (
           <p key={index} className="text-xs font-medium" style={{ color: entry.color }}>
             {entry.name}: <span className="font-bold">{valueFormatter(entry.value)}</span>
           </p>
@@ -61,7 +61,7 @@ export default function GenericLineChart({
     ...dataKeys.reduce(
       (acc, { key }) => ({
         ...acc,
-        [key]: Math.min(100, Math.max(0, item[key] || 0)),
+        [key]: Math.min(100, Math.max(0, Number(item[key]) || 0)),
       }),
       {}
     ),

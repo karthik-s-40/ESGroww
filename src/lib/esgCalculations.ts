@@ -33,11 +33,12 @@ const EMISSION_FACTORS = {
 /* ========================================= */
  
 export function calculateScope2Emissions(
-  electricityKwh: number
+  electricityKwh: number,
+  factors?: any
 ) {
+  const factor = factors?.emission?.electricity ?? EMISSION_FACTORS.electricity;
   return (
-    electricityKwh *
-    EMISSION_FACTORS.electricity
+    electricityKwh * factor
   );
 }
  
@@ -46,11 +47,12 @@ export function calculateScope2Emissions(
 /* ========================================= */
  
 export function calculateDieselEmissions(
-  dgDieselLitres: number
+  dgDieselLitres: number,
+  factors?: any
 ) {
+  const factor = factors?.emission?.diesel ?? EMISSION_FACTORS.diesel;
   return (
-    dgDieselLitres *
-    EMISSION_FACTORS.diesel
+    dgDieselLitres * factor
   );
 }
  
@@ -59,11 +61,12 @@ export function calculateDieselEmissions(
 /* ========================================= */
  
 export function calculateTransportEmissions(
-  ambulanceFuelLitres: number
+  ambulanceFuelLitres: number,
+  factors?: any
 ) {
+  const factor = factors?.emission?.ambulancefuel ?? EMISSION_FACTORS.ambulanceFuel;
   return (
-    ambulanceFuelLitres *
-    EMISSION_FACTORS.ambulanceFuel
+    ambulanceFuelLitres * factor
   );
 }
  
@@ -73,12 +76,13 @@ export function calculateTransportEmissions(
  
 export function calculateRefrigerantEmissions(
   refrigerantType: string,
-  leakKg: number
+  leakKg: number,
+  factors?: any
 ) {
-  const factor =
-    EMISSION_FACTORS.refrigerants[
-      refrigerantType as keyof typeof EMISSION_FACTORS.refrigerants
-    ] || 0;
+  let factor = EMISSION_FACTORS.refrigerants[refrigerantType as keyof typeof EMISSION_FACTORS.refrigerants] || 0;
+  if (factors?.emission && factors.emission[refrigerantType.toLowerCase()]) {
+    factor = factors.emission[refrigerantType.toLowerCase()];
+  }
  
   return factor * leakKg;
 }
@@ -88,15 +92,19 @@ export function calculateRefrigerantEmissions(
 /* ========================================= */
  
 export function calculateWasteEmissions(
-  totalWasteKg: number
+  totalWasteKg: number,
+  factors?: any
 ) {
-  return totalWasteKg * (EMISSION_FACTORS.wasteKg || 0);
+  const factor = factors?.emission?.wastekg ?? EMISSION_FACTORS.wasteKg;
+  return totalWasteKg * factor;
 }
  
 export function calculateWaterEmissions(
-  totalWaterKl: number
+  totalWaterKl: number,
+  factors?: any
 ) {
-  return totalWaterKl * (EMISSION_FACTORS.waterKl || 0);
+  const factor = factors?.emission?.waterkl ?? EMISSION_FACTORS.waterKl;
+  return totalWaterKl * factor;
 }
  
 /* ========================================= */

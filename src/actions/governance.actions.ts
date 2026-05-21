@@ -68,8 +68,8 @@ export async function saveGovernanceQuestionnaire(
       },
     });
 
-    revalidatePath("/upload");
-    revalidatePath("/upload/governance");
+    revalidatePath("/esg-readiness-platform");
+    revalidatePath("/esg-readiness-platform/governance");
     return { ok: true };
   } catch (e) {
     console.error(e);

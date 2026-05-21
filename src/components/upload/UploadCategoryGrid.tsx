@@ -374,7 +374,7 @@ export default function UploadCategoryGrid({
               </div>
 
               <Link
-                href="/upload/governance"
+                href="/esg-readiness-platform/governance"
                 className="flex h-7 w-full items-center justify-center rounded-md bg-primary text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
               >
                 {g?.isComplete ? "Edit questionnaire →" : "Fill questionnaire →"}
@@ -480,7 +480,7 @@ export default function UploadCategoryGrid({
             </div>
 
             <Link
-              href="/upload/governance"
+              href="/esg-readiness-platform/governance"
               className="inline-flex h-9 w-full items-center justify-center rounded-xl bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
             >
               {g?.isComplete ? "Edit questionnaire →" : "Fill questionnaire →"}

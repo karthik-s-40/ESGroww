@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 
 interface UseFetchAssessmentReturn {
-  data: any | null;
+  data: Record<string, unknown> | null;
   loading: boolean;
   error: string | null;
 }
 
 export function useFetchAssessment(): UseFetchAssessmentReturn {
-  const [data, setData] = useState<any | null>(null);
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

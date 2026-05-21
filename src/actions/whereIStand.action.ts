@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/getUser";
+import { AppError, ERROR_MESSAGES } from "@/lib/errors";
 
 function distinctMonths(
   rows: {
@@ -36,66 +37,61 @@ function confidenceLabel(
   return "Low";
 }
 
-export async function getWhereIStandData() {
-  const user =
-    await getCurrentUser();
+import { cookies } from "next/headers";
+
+export async function getWhereIStandData(assessmentCycleId?: string) {
+  if (!assessmentCycleId) {
+    const cookieStore = await cookies();
+    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+  }
+  const user = await getCurrentUser();
 
   if (!user?.hospitalId) {
-    throw new Error(
-      "Unauthorized"
-    );
+    throw new AppError("Unauthorized", 401);
   }
 
-  const hospital =
-    await prisma.hospital.findUnique({
-      where: {
-        id: String(
-          user.hospitalId
-        ),
-      },
+  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
 
-      include: {
-        electricityData: true,
-        waterData: true,
-        wasteData: true,
-        fuelData: true,
-        refrigerantData: true,
-        transportData: true,
-
-        uploads: {
-          orderBy: {
-            createdAt: "desc",
-          },
-
-          take: 20,
-        },
-
-        governanceData: true,
-
-        esgScores: {
-          orderBy: {
-            createdAt: "desc",
-          },
-
-          take: 1,
-        },
-
-        assessmentHistory: {
-          orderBy: {
-            createdAt: "desc",
-          },
-
-          take: 1,
-        },
-
-        certificationScores: true,
-      },
-    });
+  const hospital = await prisma.hospital.findUnique({
+    where: { id: String(user.hospitalId) },
+    select: {
+      hospitalName: true,
+      industry: true,
+      sectorCode: true,
+      country: true,
+      state: true,
+      builtUpArea: true,
+      numberOfBeds: true,
+      numberOfEmployees: true,
+      averageDailyOccupancy: true,
+      operatingHours: true,
+      numberOfFloors: true,
+      yearEstablished: true,
+      accountStatus: true,
+      electricityData: dataCondition ? { ...dataCondition, select: { month: true, year: true } } : { select: { month: true, year: true } },
+      waterData: dataCondition ? { ...dataCondition, select: { month: true, year: true } } : { select: { month: true, year: true } },
+      wasteData: dataCondition ? { ...dataCondition, select: { month: true, year: true } } : { select: { month: true, year: true } },
+      fuelData: dataCondition ? { ...dataCondition, select: { month: true, year: true } } : { select: { month: true, year: true } },
+      refrigerantData: dataCondition ? { ...dataCondition, select: { month: true, year: true } } : { select: { month: true, year: true } },
+      transportData: dataCondition ? { ...dataCondition, select: { month: true, year: true } } : { select: { month: true, year: true } },
+      uploads: assessmentCycleId 
+        ? { where: { assessmentCycleId }, orderBy: { createdAt: "desc" }, take: 20 }
+        : { orderBy: { createdAt: "desc" }, take: 20 },
+      governanceData: true,
+      esgScores: assessmentCycleId
+        ? { where: { assessmentCycleId }, orderBy: { createdAt: "desc" }, take: 1 }
+        : { orderBy: { createdAt: "desc" }, take: 1 },
+      assessmentHistory: assessmentCycleId
+        ? { where: { assessmentCycleId }, orderBy: { createdAt: "desc" }, take: 1 }
+        : { orderBy: { createdAt: "desc" }, take: 1 },
+      certificationScores: assessmentCycleId
+        ? { where: { assessmentCycleId } }
+        : true,
+    },
+  });
 
   if (!hospital) {
-    throw new Error(
-      "Hospital not found"
-    );
+    throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404);
   }
 
   /* -------------------------------- */

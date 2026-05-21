@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 interface GenericSpiderChartProps {
-  data: Array<Record<string, any>>;
+  data: Array<Record<string, number | string>>;
   dataKeys: Array<{
     key: string;
     label: string;
@@ -26,13 +26,13 @@ interface GenericSpiderChartProps {
   showScaleReference?: boolean;
 }
 
-const CustomSpiderTooltip = ({ active, payload, valueFormatter }: any) => {
+const CustomSpiderTooltip = ({ active, payload, valueFormatter }: { active?: boolean; payload?: Array<{ name: string; value: number; fill?: string; payload?: Record<string, string> }>; valueFormatter: (value: number) => string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border-2 border-indigo-400 shadow-2xl p-5 backdrop-blur-sm">
         <p className="text-base font-bold text-white mb-3">{payload[0]?.payload?.name}</p>
         <div className="space-y-2.5 border-t border-gray-700 pt-3">
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">
                 <div 

@@ -2,6 +2,7 @@
  
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { getAdminCalculationFactors } from "@/lib/adminConfig";
  
 import {
   calculateScope2Emissions,
@@ -45,7 +46,13 @@ function annualizationDenominator(distinctMonths: number): number {
   return distinctMonths >= BRD_MIN_MONTHS_FOR_ANNUALIZATION ? distinctMonths : 0;
 }
  
-export async function computeAndSaveAssessment() {
+import { cookies } from "next/headers";
+
+export async function computeAndSaveAssessment(assessmentCycleId?: string) {
+  if (!assessmentCycleId) {
+    const cookieStore = await cookies();
+    assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+  }
   const user = await getCurrentUser();
  
   if (!user) {
@@ -64,43 +71,47 @@ export async function computeAndSaveAssessment() {
     throw new Error("Hospital not found");
   }
  
+  const { factors } = await getAdminCalculationFactors();
+ 
   // ─────────────────────────────────────────────
   // FETCH DATA
   // ─────────────────────────────────────────────
  
+  const whereClause = assessmentCycleId ? { hospitalId, assessmentCycleId } : { hospitalId };
+
   const electricityData =
     await prisma.electricityData.findMany({
-      where: { hospitalId },
+      where: whereClause,
     });
  
   const waterData =
     await prisma.waterData.findMany({
-      where: { hospitalId },
+      where: whereClause,
     });
  
   const fuelData =
     await prisma.fuelData.findMany({
-      where: { hospitalId },
+      where: whereClause,
     });
  
   const wasteData =
     await prisma.wasteData.findMany({
-      where: { hospitalId },
+      where: whereClause,
     });
  
   const transportData =
     await prisma.transportData.findMany({
-      where: { hospitalId },
+      where: whereClause,
     });
  
   const refrigerantData =
     await prisma.refrigerantData.findMany({
-      where: { hospitalId },
+      where: whereClause,
     });
  
   const governanceData =
     await prisma.governanceData.findUnique({
-      where: { hospitalId },
+      where: { hospitalId }, // governance might be hospital-wide or cycle-specific. Leaving as hospital-wide for now.
     });
  
   // ─────────────────────────────────────────────
@@ -268,12 +279,14 @@ export async function computeAndSaveAssessment() {
  
   const scope2Emissions =
     calculateScope2Emissions(
-      annualizedElectricity
+      annualizedElectricity,
+      factors
     );
  
   const dieselEmissions =
     calculateDieselEmissions(
-      annualizedFuel
+      annualizedFuel,
+      factors
     );
  
   const transportEmissions =
@@ -281,7 +294,8 @@ export async function computeAndSaveAssessment() {
       (sum, row) =>
         sum +
         calculateTransportEmissions(
-          row.ambulanceFuelLitres
+          row.ambulanceFuelLitres,
+          factors
         ),
       0
     );
@@ -292,17 +306,18 @@ export async function computeAndSaveAssessment() {
         sum +
         calculateRefrigerantEmissions(
           row.refrigerantType,
-          row.refrigerantLeakKg
+          row.refrigerantLeakKg,
+          factors
         ),
       0
     );
  
   // Compute water and waste emissions (used for Scope 3)
   const wasteEmissions =
-    calculateWasteEmissions(annualizedWaste);
+    calculateWasteEmissions(annualizedWaste, factors);
  
   const waterEmissions =
-    calculateWaterEmissions(annualizedWater);
+    calculateWaterEmissions(annualizedWater, factors);
  
   const totalEmissions =
     scope2Emissions +
@@ -782,6 +797,7 @@ export async function computeAndSaveAssessment() {
   await prisma.assessmentHistory.create({
     data: {
       hospitalId,
+      assessmentCycleId,
  
       completenessPct:
         overallCompleteness,

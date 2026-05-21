@@ -80,7 +80,7 @@ export default function GovernanceQuestionnairePage() {
   return (
     <div className="mx-auto max-w-2xl pb-16">
       <Link
-        href="/upload"
+        href="/esg-readiness-platform"
         className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -139,7 +139,7 @@ export default function GovernanceQuestionnairePage() {
               "Save questionnaire"
             )}
           </Button>
-          <Link href="/upload" className={cn(buttonVariants({ variant: "outline" }))}>
+          <Link href="/esg-readiness-platform" className={cn(buttonVariants({ variant: "outline" }))}>
             Cancel
           </Link>
         </div>

@@ -89,6 +89,9 @@ export default function LoginForm() {
     } else if (err === "invalid-token") {
       urlError =
         "That verification or reset link is invalid. Please try again from your email or request a new link.";
+    } else if (err === "session_expired") {
+      urlError =
+        "Your session has expired or you have logged out. Please log in again to access this feature.";
     }
   }
 
@@ -149,7 +152,7 @@ export default function LoginForm() {
         return;
       }
 
-      router.push("/upload");
+      router.push("/esg-readiness-platform");
     } catch {
       setError(
         "Something went wrong. Please try again."

@@ -24,8 +24,8 @@ async function runUpload(
   const result = await processCategoryExcelUpload(category, hospitalId, formData);
 
   if (result.success) {
-    revalidatePath("/upload");
-    revalidatePath("/upload/history");
+    revalidatePath("/esg-readiness-platform");
+    revalidatePath("/esg-readiness-platform/history");
   }
 
   return result;

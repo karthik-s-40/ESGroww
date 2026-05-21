@@ -7,7 +7,7 @@ export default function UploadHistoryPage() {
   return (
     <div className="mx-auto max-w-6xl pb-16">
       <Link
-        href="/upload"
+        href="/esg-readiness-platform"
         className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
       >
         <ArrowLeft className="h-4 w-4" />
