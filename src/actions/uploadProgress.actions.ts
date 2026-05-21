@@ -108,36 +108,37 @@ function readinessSlice(distinctMonths: number): CategoryReadinessSlice {
 }
  
 export async function getUploadProgress(): Promise<UploadProgressPayload | null> {
-  const user = await getCurrentUser();
- 
-  if (!user || typeof user === "string" || !("hospitalId" in user)) {
-    return null;
-  }
- 
-  const hospitalId = String(user.hospitalId);
- 
-  const cookieStore = await import("next/headers").then(m => m.cookies());
-  const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
-  const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
- 
-  const hospital = await prisma.hospital.findUnique({
-    where: {
-      id: hospitalId,
-    },
-    include: {
-      electricityData: dataCondition,
-      waterData: dataCondition,
-      fuelData: dataCondition,
-      wasteData: dataCondition,
-      refrigerantData: dataCondition,
-      transportData: dataCondition,
-      governanceData: true,
-    },
-  });
- 
-  if (!hospital) {
-    return null;
-  }
+  try {
+    const user = await getCurrentUser();
+
+    if (!user || typeof user === "string" || !("hospitalId" in user)) {
+      return null;
+    }
+
+    const hospitalId = String(user.hospitalId);
+
+    const cookieStore = await import("next/headers").then((m) => m.cookies());
+    const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+    const dataCondition = assessmentCycleId ? { where: { assessmentCycleId } } : undefined;
+
+    const hospital = await prisma.hospital.findUnique({
+      where: {
+        id: hospitalId,
+      },
+      include: {
+        electricityData: dataCondition,
+        waterData: dataCondition,
+        fuelData: dataCondition,
+        wasteData: dataCondition,
+        refrigerantData: dataCondition,
+        transportData: dataCondition,
+        governanceData: true,
+      },
+    });
+
+    if (!hospital) {
+      return null;
+    }
  
   const governance = governanceProgressFromRow(hospital.governanceData);
  
@@ -170,7 +171,7 @@ export async function getUploadProgress(): Promise<UploadProgressPayload | null>
     (c) => categories[c].readinessUnlocked
   );
  
-  return {
+    return {
     electricity: electricityMonths,
     water: waterMonths,
     fuel: fuelMonths,
@@ -185,45 +186,54 @@ export async function getUploadProgress(): Promise<UploadProgressPayload | null>
       mandatoryGaps,
       categories,
     },
-  };
+    };
+  } catch (error) {
+    console.error("[uploadProgress.actions] Failed to load upload progress:", error);
+    return null;
+  }
 }
  
 export async function getRecentUploads(limit = 10) {
-  const user = await getCurrentUser();
- 
-  if (!user || typeof user === "string" || !("hospitalId" in user)) {
-    return null;
-  }
- 
-  const hospitalId = String(user.hospitalId);
- 
-  const cookieStore = await import("next/headers").then(m => m.cookies());
-  const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
- 
-  const uploads = await prisma.upload.findMany({
-    where: {
-      hospitalId,
-      ...(assessmentCycleId ? { assessmentCycleId } : {}),
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: Math.min(Math.max(limit, 1), 200),
-    include: {
-      uploadBatch: {
-        select: {
-          id: true,
-          batchVersion: true,
-          resolutionStrategy: true,
-          isSuperseded: true,
-          rowCount: true,
-          distinctMonthCount: true,
+  try {
+    const user = await getCurrentUser();
+
+    if (!user || typeof user === "string" || !("hospitalId" in user)) {
+      return [];
+    }
+
+    const hospitalId = String(user.hospitalId);
+
+    const cookieStore = await import("next/headers").then((m) => m.cookies());
+    const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
+
+    const uploads = await prisma.upload.findMany({
+      where: {
+        hospitalId,
+        ...(assessmentCycleId ? { assessmentCycleId } : {}),
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: Math.min(Math.max(limit, 1), 200),
+      include: {
+        uploadBatch: {
+          select: {
+            id: true,
+            batchVersion: true,
+            resolutionStrategy: true,
+            isSuperseded: true,
+            rowCount: true,
+            distinctMonthCount: true,
+          },
         },
       },
-    },
-  });
- 
-  return uploads;
+    });
+
+    return uploads;
+  } catch (error) {
+    console.error("[uploadProgress.actions] Failed to load recent uploads:", error);
+    return [];
+  }
 }
  
  

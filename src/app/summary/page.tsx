@@ -18,7 +18,8 @@ type DriverCardData = {
 };
 
 export default async function SummaryPage() {
-  const data = await getSummaryData();
+  try {
+    const data = await getSummaryData();
 
   const environmentalScore = data.scores.environmentalScore;
   const socialScore        = data.scores.socialScore;
@@ -82,7 +83,7 @@ export default async function SummaryPage() {
     recommendations.push({ title: "Improve ESG Reporting", desc: "Increase data confidence and compliance." });
   }
 
-  return (
+    return (
     <PageWrapper maxWidth="wide" dense id="summary-report">
       
       {/* HERO SECTION */}
@@ -195,7 +196,20 @@ export default async function SummaryPage() {
         }
       />
     </PageWrapper>
-  );
+    );
+  } catch (error) {
+    console.error("[summary.page] Failed to render summary page:", error);
+    return (
+      <PageWrapper maxWidth="wide" dense>
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-900 shadow-sm">
+          <PageTitle className="text-rose-900">Summary unavailable</PageTitle>
+          <BodyText className="mt-2 text-rose-800">
+            The ESG summary could not be loaded right now. Please refresh the page or try again later.
+          </BodyText>
+        </div>
+      </PageWrapper>
+    );
+  }
 }
 
 function InfoTooltip({ text }: { text: string }) {

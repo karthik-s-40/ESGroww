@@ -261,17 +261,21 @@ export async function POST(
           verificationToken,
       });
     } catch (mailErr) {
-      await prisma.user.delete({
-        where: {
-          id: user.id,
-        },
-      });
+      try {
+        await prisma.user.delete({
+          where: {
+            id: user.id,
+          },
+        });
 
-      await prisma.hospital.delete({
-        where: {
-          id: hospital.id,
-        },
-      });
+        await prisma.hospital.delete({
+          where: {
+            id: hospital.id,
+          },
+        });
+      } catch (cleanupErr) {
+        console.error("[register route] Failed to roll back registration records:", cleanupErr);
+      }
 
       console.error(mailErr);
 
