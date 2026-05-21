@@ -132,7 +132,11 @@ model ElectricityData {
   hospitalId        String
   month             String
   year              Int
+  electricityCost   Float            @default(0)
   electricityKwh    Float            @default(0)
+  meterReading      Float            @default(0)
+  peakDemand        Float            @default(0)
+  powerFactor       Float            @default(0)
   renewableKwh      Float            @default(0)
   createdAt         DateTime         @default(now())
   sourceBatchId     String?
@@ -149,8 +153,13 @@ model WaterData {
   hospitalId        String
   month             String
   year              Int
-  waterKl           Float            @default(0)
+  municipalWaterKl  Float            @default(0)
+  tankerWaterKl     Float            @default(0)
+  borewellWaterKl   Float            @default(0)
+  rainwaterHarvestedKl Float         @default(0)
   recycledWaterKl   Float            @default(0)
+  totalWaterConsumptionKl Float       @default(0)
+  waterCost         Float            @default(0)
   createdAt         DateTime         @default(now())
   sourceBatchId     String?
   assessmentCycleId String?
@@ -167,6 +176,9 @@ model FuelData {
   month             String
   year              Int
   dgDieselLitres    Float            @default(0)
+  dgRuntimeHours    Float            @default(0)
+  dieselCost        Float            @default(0)
+  pngCngQuantity    Float            @default(0)
   createdAt         DateTime         @default(now())
   sourceBatchId     String?
   assessmentCycleId String?
@@ -182,9 +194,15 @@ model WasteData {
   hospitalId        String
   month             String
   year              Int
+  wetWasteKg        Float            @default(0)
+  dryWasteKg        Float            @default(0)
+  hazardousWasteKg  Float            @default(0)
   biomedicalWasteKg Float            @default(0)
+  eWasteKg          Float            @default(0)
+  constructionWasteKg Float           @default(0)
   recyclableWasteKg Float            @default(0)
   landfillWasteKg   Float            @default(0)
+  authorizedVendorDisposalKg Float    @default(0)
   createdAt         DateTime         @default(now())
   sourceBatchId     String?
   assessmentCycleId String?
@@ -219,6 +237,10 @@ model TransportData {
   year                Int
   ambulanceFuelLitres Float            @default(0)
   staffCommuteKm      Float            @default(0)
+  fleetFuelConsumption Float           @default(0)
+  vehicleKilometers   Float            @default(0)
+  cargoTonnage        Float            @default(0)
+  tonneKilometers     Float            @default(0)
   createdAt           DateTime         @default(now())
   sourceBatchId       String?
   assessmentCycleId   String?

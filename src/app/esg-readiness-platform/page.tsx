@@ -32,11 +32,6 @@ export default function UploadPage() {
         </SectionCard>
 
         <UploadWorkspace />
-
-        <footer className="fixed bottom-0 left-0 right-0 z-50 flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-background/95 px-4 py-2 text-[10px] text-muted-foreground backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
-          <span>© {new Date().getFullYear()} ESGroww</span>
-          <span>v0.1.0</span>
-        </footer>
       </PageWrapper>
     </div>
   );

@@ -64,7 +64,7 @@ describe("getSummaryData", () => {
       waterData: Array.from({ length: 12 }, (_, index) => ({
         month: `M${index + 1}`,
         year: 2025,
-        waterKl: 100,
+        totalWaterConsumptionKl: 100,
         recycledWaterKl: 60,
       })),
       fuelData: Array.from({ length: 12 }, (_, index) => ({

@@ -17,7 +17,7 @@ export interface ESGConfiguration {
     diesel: number;
     ambulanceFuel: number;
     wasteKg: number;
-    waterKl: number;
+    totalWaterConsumptionKl: number;
     refrigerants: Record<string, number>;
   };
 }
@@ -69,7 +69,7 @@ const fetchConfigurationFromDb = async (): Promise<ESGConfiguration> => {
     diesel: 2.68,
     ambulanceFuel: 2.68,
     wasteKg: 0.8,
-    waterKl: 0.5,
+    totalWaterConsumptionKl: 0.5,
     refrigerants: {
       r410a: 2088,
       r32: 675,

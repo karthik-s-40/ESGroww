@@ -99,6 +99,12 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
  
   const waterData =
     await prisma.waterData.findMany({
+      select: {
+        month: true,
+        year: true,
+        totalWaterConsumptionKl: true,
+        recycledWaterKl: true,
+      },
       where: whereClause,
     });
  
@@ -145,10 +151,10 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       0
     );
  
-  const totalWater =
+  const totalWaterConsumptionKl =
     waterData.reduce(
       (sum, row) =>
-        sum + row.waterKl,
+        sum + row.totalWaterConsumptionKl,
       0
     );
  
@@ -275,7 +281,10 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
     annualizationDenominator(electricityMonths)
   );
  
-  const annualizedWater = annualizeWater(totalWater, annualizationDenominator(waterMonths));
+  const annualizedWater = annualizeWater(
+    totalWaterConsumptionKl,
+    annualizationDenominator(waterMonths)
+  );
  
   const annualizedFuel = annualizeFuel(totalFuel, annualizationDenominator(fuelMonths));
  
@@ -353,7 +362,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
   const waterRecyclingPercentage =
     calculateWaterRecyclingPercentage(
       totalRecycledWater,
-      totalWater
+      totalWaterConsumptionKl
     );
  
   const wasteDiversionPercentage =
@@ -1059,7 +1068,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       renewable:
         totalRenewable,
       water:
-        totalWater,
+        totalWaterConsumptionKl,
       recycledWater:
         totalRecycledWater,
       fuel:

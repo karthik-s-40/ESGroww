@@ -79,7 +79,7 @@ const CATEGORIES: CategoryConfig[] = [
     icon: Zap,
     iconColor: "text-amber-500",
     iconBg: "bg-amber-50",
-    desc: "Monthly kWh, cost, peak demand, power factor",
+    desc: "kWh, cost, meter reading, peak demand, power factor, renewable kWh",
     template: "/templates/electricity-template.xlsx",
   },
   {
@@ -97,7 +97,7 @@ const CATEGORIES: CategoryConfig[] = [
     icon: Fuel,
     iconColor: "text-muted-foreground",
     iconBg: "bg-muted",
-    desc: "Diesel litres, runtime hours, PNG/CNG kg",
+    desc: "Diesel litres, runtime hours, fuel cost, PNG/CNG quantity",
     template: "/templates/fuel-template.xlsx",
   },
   {
@@ -106,7 +106,7 @@ const CATEGORIES: CategoryConfig[] = [
     icon: Trash2,
     iconColor: "text-green-600",
     iconBg: "bg-green-50",
-    desc: "Wet, dry, hazardous, biomedical, e-waste kg",
+    desc: "Wet, dry, hazardous, biomedical, e-waste, construction, disposal kg",
     template: "/templates/waste-template.xlsx",
   },
   {
@@ -124,7 +124,7 @@ const CATEGORIES: CategoryConfig[] = [
     icon: Truck,
     iconColor: "text-violet-600",
     iconBg: "bg-violet-50",
-    desc: "Fleet fuel, vehicle km, cargo tonnage",
+    desc: "Fleet fuel, vehicle km, cargo tonnage, tonne-km",
     template: "/templates/transport-template.xlsx",
   },
 ];
