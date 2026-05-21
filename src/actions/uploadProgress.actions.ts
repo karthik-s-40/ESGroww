@@ -189,6 +189,8 @@ export async function getRecentUploads(limit = 10) {
     return null;
   }
 
+  const hospitalId = String(user.hospitalId);
+  
   const cookieStore = await import("next/headers").then(m => m.cookies());
   const assessmentCycleId = cookieStore.get("activeAssessmentCycleId")?.value;
 
