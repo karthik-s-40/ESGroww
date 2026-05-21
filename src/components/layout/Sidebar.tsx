@@ -33,19 +33,19 @@ type NavItem = {
 };
 
 const MAIN_NAV: NavItem[] = [
-  { href: "/esg-readiness-platform", label: "ESG Readiness Platform", icon: Upload, exact: true },
-  { href: "/summary", label: "Summary", icon: LayoutDashboard },
-  { href: "/results", label: "Results", icon: BarChart2 },
-  { href: "/kpi", label: "KPIs", icon: PieChart },
-  { href: "/metrics", label: "Metrics", icon: ShieldAlert },
-  { href: "/glossary", label: "Glossary", icon: BookOpen },
-  { href: "/esg-readiness-platform/history", label: "Assessment History", icon: History },
+  { href: "/h/L2VzZy1yZWFkaW5lc3MtcGxhdGZvcm0=", label: "ESG Readiness Platform", icon: Upload, exact: true },
+  { href: "/h/L3N1bW1hcnk=", label: "Summary", icon: LayoutDashboard },
+  { href: "/h/L3Jlc3VsdHM=", label: "Results", icon: BarChart2 },
+  { href: "/h/L2twaQ==", label: "KPIs", icon: PieChart },
+  { href: "/h/L21ldHJpY3M=", label: "Metrics", icon: ShieldAlert },
+  { href: "/h/L2dsb3NzYXJ5", label: "Glossary", icon: BookOpen },
+  { href: "/h/L2VzZy1yZWFkaW5lc3MtcGxhdGZvcm0vaGlzdG9yeQ==", label: "Assessment History", icon: History },
 ];
 
 const BOTTOM_NAV: NavItem[] = [
-  { href: "/help", label: "Help", icon: CircleHelp },
-  { href: "/admin", label: "Admin Console", icon: Settings, adminOnly: true },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/h/L2hlbHA=", label: "Help", icon: CircleHelp },
+  { href: "/h/L2FkbWlu", label: "Admin Console", icon: Settings, adminOnly: true },
+  { href: "/h/L3Byb2ZpbGU=", label: "Profile", icon: User },
   { label: "Logout", icon: LogOut, onClick: async () => {
       try {
         await fetch('/api/auth/logout', { method: 'POST' });
