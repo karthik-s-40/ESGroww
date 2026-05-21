@@ -19,5 +19,5 @@ export const PDF_RASTER_SCALE = 2;
 /** Centered logo watermark (printed-on-paper feel). */
 export const PDF_WATERMARK_OPACITY = 0.028;
 
-/** Print-safe inner padding (px) inside each logical page. */
-export const PDF_CONTENT_INSET_PX = { top: 44, right: 40, bottom: 52, left: 40 };
+/** Print-safe inner padding (px) inside each logical page (room for footer band). */
+export const PDF_CONTENT_INSET_PX = { top: 24, right: 24, bottom: 40, left: 24 };

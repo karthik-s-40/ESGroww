@@ -3,7 +3,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useMemo } from "react";
 import type { KPIBenchmark } from "@/lib/kpiUtils";
-import logoImg from "@/app/logo.png";
 import type { DownloadReportData } from "@/components/shared/DownloadReportButton";
 import {
   evaluateDGDependency,
@@ -18,7 +17,6 @@ import {
 import {
   A4_PORTRAIT_CSS_PX,
   PDF_CONTENT_INSET_PX,
-  PDF_WATERMARK_OPACITY,
 } from "@/lib/pdf/pdfConstants";
 
 const BRAND = {
@@ -26,9 +24,11 @@ const BRAND = {
   yellow: "#b45309",
   red: "#b91c1c",
   blue: "#1d4ed8",
-  slate: "#64748b",
+  /** Section labels — darker for raster/PDF legibility */
+  slate: "#334155",
   ink: "#0f172a",
-  muted: "#475569",
+  /** Body secondary — stronger than default muted for small type */
+  muted: "#334155",
   line: "#e2e8f0",
   soft: "#f8fafc",
 };
@@ -74,13 +74,21 @@ const formatCertName = (name: string) => {
 const typeMeta: CSSProperties = {
   fontSize: 9,
   fontWeight: 700,
-  letterSpacing: "0.14em",
+  letterSpacing: "0.08em",
   textTransform: "uppercase",
   color: BRAND.slate,
   margin: 0,
+  lineHeight: 1.4,
 };
 
+/** Stable stack for html2canvas (avoid variable font metrics clipping in PDF raster). */
+const printFont = "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
 const grid8 = 8;
+/** Vertical rhythm between major blocks (tighter = less blank PDF space). */
+const sectionGap = grid8 * 1.25;
+/** Card interior padding */
+const cardPad = grid8 * 1.5;
 
 function Gauge({ value, size = 108 }: { value: number; size?: number }) {
   const radius = 36;
@@ -99,10 +107,10 @@ function Gauge({ value, size = 108 }: { value: number; size?: number }) {
         strokeDasharray={circumference}
         strokeDashoffset={offset}
       />
-      <text x="60" y="52" textAnchor="middle" fontSize="22" fontWeight="800" fill={BRAND.ink} fontFamily="var(--font-lexend), sans-serif">
+      <text x="60" y="52" textAnchor="middle" fontSize="22" fontWeight="800" fill={BRAND.ink} fontFamily={printFont}>
         {value}
       </text>
-      <text x="60" y="72" textAnchor="middle" fontSize="10" fill={BRAND.muted} fontFamily="var(--font-lexend), sans-serif">
+      <text x="60" y="72" textAnchor="middle" fontSize="10" fill={BRAND.muted} fontFamily={printFont}>
         Overall
       </text>
     </svg>
@@ -134,8 +142,9 @@ function ReportFooter({
         flexWrap: "wrap",
         fontSize: 9,
         color: BRAND.slate,
-        fontFamily: "var(--font-lexend), sans-serif",
+        fontFamily: printFont,
         letterSpacing: "0.02em",
+        lineHeight: 1.35,
       }}
     >
       <span style={{ fontWeight: 600 }}>{orgName} ESG Sustainability Review</span>
@@ -149,33 +158,6 @@ function ReportFooter({
   );
 }
 
-function WatermarkLayer() {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        pointerEvents: "none",
-        zIndex: 0,
-      }}
-    >
-      <img
-        src={logoImg.src}
-        alt=""
-        style={{
-          width: "58%",
-          maxWidth: 520,
-          opacity: PDF_WATERMARK_OPACITY,
-          objectFit: "contain",
-        }}
-      />
-    </div>
-  );
-}
-
 function PrintPage({
   children,
   footer,
@@ -185,6 +167,8 @@ function PrintPage({
 }) {
   const { width, height } = A4_PORTRAIT_CSS_PX;
   const inset = PDF_CONTENT_INSET_PX;
+  /** Reserve space so body copy does not collide with the absolute footer band. */
+  const footerReserve = 36;
   return (
     <div
       data-pdf-page=""
@@ -193,21 +177,21 @@ function PrintPage({
         height,
         position: "relative",
         overflow: "hidden",
-        backgroundColor: "transparent",
+        /* Full-bleed white: template PDF must not show through margins (fixes “Summary Report” ghosting). */
+        backgroundColor: "#ffffff",
         boxSizing: "border-box",
+        paddingTop: inset.top,
+        paddingRight: inset.right,
+        paddingBottom: inset.bottom + footerReserve,
+        paddingLeft: inset.left,
       }}
     >
-      <WatermarkLayer />
       <div
         style={{
-          position: "absolute",
-          left: inset.left,
-          right: inset.right,
-          top: inset.top,
-          bottom: inset.bottom,
-          zIndex: 1,
           display: "flex",
           flexDirection: "column",
+          alignItems: "stretch",
+          justifyContent: "flex-start",
           minHeight: 0,
         }}
       >
@@ -222,10 +206,10 @@ function PrintCard({ children, style }: { children: ReactNode; style?: CSSProper
   return (
     <div
       style={{
-        background: "rgba(255,255,255,0.94)",
+        background: "#ffffff",
         border: `1px solid ${BRAND.line}`,
-        borderRadius: 2,
-        padding: grid8 * 2,
+        borderRadius: 4,
+        padding: cardPad,
         boxSizing: "border-box",
         ...style,
       }}
@@ -319,17 +303,17 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
     <div
       id="pdf-report-capture"
       className="fixed left-[-9999px] top-0"
-      style={{ width: A4_PORTRAIT_CSS_PX.width, pointerEvents: "none", zIndex: -2, fontFamily: "var(--font-lexend), sans-serif" }}
+      style={{ width: A4_PORTRAIT_CSS_PX.width, pointerEvents: "none", zIndex: -2, fontFamily: printFont }}
     >
       {/* —— Page 1: Cover + executive snapshot + readiness —— */}
       <PrintPage>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: sectionGap, minHeight: 0 }}>
           <div>
-            <p style={{ ...typeMeta, marginBottom: grid8 }}>Investor-grade ESG summary</p>
+            <p style={{ ...typeMeta, marginBottom: 6 }}>Investor-grade ESG summary</p>
             <h1
               style={{
                 margin: 0,
-                fontFamily: "var(--font-lexend), sans-serif",
+                fontFamily: printFont,
                 fontSize: 34,
                 fontWeight: 700,
                 color: BRAND.ink,
@@ -339,13 +323,13 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
             >
               {orgName}
             </h1>
-            <p style={{ margin: "10px 0 0", fontSize: 13, color: BRAND.muted, lineHeight: 1.55, maxWidth: 520 }}>
+            <p style={{ margin: "10px 0 0", fontSize: 12, color: BRAND.muted, lineHeight: 1.5, maxWidth: 520 }}>
               Sustainability review — structured for assurance conversations, capital partners, and enterprise ESG programs.
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: grid8 * 2, alignItems: "stretch", marginTop: grid8 * 2 }}>
-            <PrintCard style={{ display: "flex", flexDirection: "column", gap: grid8 * 2 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: sectionGap, alignItems: "stretch" }}>
+            <PrintCard style={{ display: "flex", flexDirection: "column", gap: cardPad }}>
               <p style={typeMeta}>Executive snapshot</p>
               <div style={{ display: "flex", gap: grid8 * 3, alignItems: "center" }}>
                 <Gauge value={score} />
@@ -357,8 +341,8 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                     { label: "Comprehensiveness", value: `${Math.round(data.completeness)}%` },
                   ].map((row) => (
                     <div key={row.label} style={{ borderLeft: `3px solid ${stageColor(score)}`, paddingLeft: grid8 * 1.5 }}>
-                      <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: BRAND.slate }}>{row.label}</p>
-                      <p style={{ margin: "4px 0 0", fontSize: 14, fontWeight: 800, color: BRAND.ink }}>{row.value}</p>
+                      <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: BRAND.slate, lineHeight: 1.35 }}>{row.label}</p>
+                      <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 800, color: BRAND.ink, lineHeight: 1.2 }}>{row.value}</p>
                     </div>
                   ))}
                 </div>
@@ -367,29 +351,20 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
             <PrintCard>
               <p style={typeMeta}>Readiness summary</p>
               <p style={{ margin: "12px 0 0", fontSize: 22, fontWeight: 800, color: stageColor(score) }}>{data.readinessStage}</p>
-              <p style={{ margin: "10px 0 0", fontSize: 11, color: BRAND.muted, lineHeight: 1.55 }}>
+              <p style={{ margin: "10px 0 0", fontSize: 11, color: BRAND.muted, lineHeight: 1.5 }}>
                 Portfolio carbon footprint <strong style={{ color: BRAND.ink }}>{data.totalEmissions.toFixed(1)} tCO₂e</strong> / yr
                 (indicative model). Scores reflect uploaded operational evidence and SAM methodology — not a certification outcome.
               </p>
               <div style={{ marginTop: grid8 * 2, paddingTop: grid8 * 2, borderTop: `1px solid ${BRAND.line}` }}>
-                <p style={{ margin: 0, fontSize: 9, color: BRAND.slate }}>Sector</p>
-                <p style={{ margin: "4px 0 0", fontSize: 14, fontWeight: 700 }}>{data.sector ?? "Healthcare"}</p>
+                <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: BRAND.slate, lineHeight: 1.35 }}>Sector</p>
+                <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 700, color: BRAND.ink }}>{data.sector ?? "Healthcare"}</p>
               </div>
             </PrintCard>
           </div>
 
-          <p style={{ margin: `${grid8 * 2}px 0 0`, fontSize: 10, color: BRAND.slate, textAlign: "center" }}>
-            ESGroww • {generatedLabel}
-          </p>
-        </div>
-      </PrintPage>
-
-      {/* —— Page 2: Categories + emissions + certifications —— */}
-      <PrintPage footer={<ReportFooter orgName={orgName} pageLabel="Page 2" generatedLabel={generatedLabel} />}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: grid8 * 2, minHeight: 0 }}>
           <PrintCard style={{ flex: "0 0 auto" }}>
             <p style={typeMeta}>Category performance</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: grid8 * 2, marginTop: grid8 * 2 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: cardPad, marginTop: cardPad }}>
               {[
                 { label: "Energy", value: categoryScores.energy, accent: "#d97706" },
                 { label: "Water", value: categoryScores.water, accent: BRAND.blue },
@@ -397,11 +372,11 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                 { label: "Governance", value: categoryScores.governance, accent: "#6d28d9" },
               ].map((c) => (
                 <div key={c.label} style={{ textAlign: "center" }}>
-                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: BRAND.slate }}>{c.label}</p>
-                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 900, color: stageColor(c.value), fontFamily: "var(--font-lexend), sans-serif" }}>
+                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: BRAND.slate, lineHeight: 1.3 }}>{c.label}</p>
+                  <p style={{ margin: "6px 0 0", fontSize: 22, fontWeight: 900, color: stageColor(c.value), fontFamily: printFont }}>
                     {Math.round(c.value)}
                   </p>
-                  <div style={{ marginTop: grid8, height: 6, background: "#e2e8f0", borderRadius: 1, overflow: "hidden" }}>
+                  <div style={{ marginTop: grid8, height: 5, background: "#e2e8f0", borderRadius: 1, overflow: "hidden" }}>
                     <div style={{ width: `${Math.min(100, Math.max(0, c.value))}%`, height: "100%", background: c.accent }} />
                   </div>
                 </div>
@@ -409,10 +384,19 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
             </div>
           </PrintCard>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: grid8 * 2, flex: 1, minHeight: 0 }}>
+          <p style={{ margin: `${sectionGap}px 0 0`, fontSize: 9, color: BRAND.slate, textAlign: "center", lineHeight: 1.4 }}>
+            ESGroww • {generatedLabel}
+          </p>
+        </div>
+      </PrintPage>
+
+      {/* —— Page 2: Categories + emissions + certifications —— */}
+      <PrintPage footer={<ReportFooter orgName={orgName} pageLabel="Page 2" generatedLabel={generatedLabel} />}>
+        <div style={{ display: "flex", flexDirection: "column", gap: sectionGap, minHeight: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: sectionGap, alignItems: "start" }}>
             <PrintCard style={{ display: "flex", flexDirection: "column" }}>
               <p style={typeMeta}>Emissions profile</p>
-              <div style={{ marginTop: grid8 * 2, display: "flex", flexDirection: "column", gap: grid8 * 1.5, flex: 1 }}>
+              <div style={{ marginTop: cardPad, display: "flex", flexDirection: "column", gap: grid8 * 1.25 }}>
                 {[
                   { label: "Scope 1 — direct", value: emissions.scope1, tone: "#b91c1c" },
                   { label: "Scope 2 — indirect energy", value: emissions.scope2, tone: "#c2410c" },
@@ -430,8 +414,8 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                       border: `1px solid ${BRAND.line}`,
                     }}
                   >
-                    <span style={{ fontSize: 11, fontWeight: 600, color: BRAND.ink }}>{s.label}</span>
-                    <span style={{ fontSize: 16, fontWeight: 900, color: s.tone }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: BRAND.ink, lineHeight: 1.35 }}>{s.label}</span>
+                    <span style={{ fontSize: 15, fontWeight: 900, color: s.tone, lineHeight: 1.2 }}>
                       {s.value.toFixed(1)} <span style={{ fontSize: 10, fontWeight: 600, color: BRAND.slate }}>tCO₂e</span>
                     </span>
                   </div>
@@ -439,15 +423,15 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
               </div>
             </PrintCard>
 
-            <PrintCard style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+            <PrintCard style={{ display: "flex", flexDirection: "column" }}>
               <p style={typeMeta}>Certification readiness</p>
               <div
                 style={{
-                  marginTop: grid8 * 2,
+                  marginTop: cardPad,
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: grid8 * 1.5,
-                  overflow: "hidden",
+                  gap: grid8 * 1.25,
+                  overflow: "visible",
                 }}
               >
                 {certEntries.slice(0, 8).map((cert) => {
@@ -460,7 +444,7 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                         gridTemplateColumns: "auto 1fr auto",
                         alignItems: "center",
                         gap: grid8 * 1.5,
-                        padding: `${grid8 * 1.5}px ${grid8 * 1.5}px`,
+                        padding: `${grid8 * 1.25}px ${grid8 * 1.25}px`,
                         background: BRAND.soft,
                         border: `1px solid ${BRAND.line}`,
                         borderRadius: 2,
@@ -483,10 +467,10 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                         {cert.score}
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: BRAND.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <p style={{ margin: 0, fontSize: 10, fontWeight: 800, color: BRAND.ink, lineHeight: 1.35, wordBreak: "break-word" }}>
                           {formatCertName(cert.name)}
                         </p>
-                        <p style={{ margin: "4px 0 0", fontSize: 9, fontWeight: 600, color: BRAND.slate }}>{cert.status}</p>
+                        <p style={{ margin: "4px 0 0", fontSize: 9, fontWeight: 600, color: BRAND.slate, lineHeight: 1.35 }}>{cert.status}</p>
                       </div>
                       <div style={{ width: 52, height: 6, background: "#e2e8f0", borderRadius: 99, overflow: "hidden" }}>
                         <div style={{ width: `${cert.score}%`, height: "100%", background: color }} />
@@ -502,13 +486,13 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
 
       {/* —— Page 3: KPI + strengths / gaps + roadmap pathway —— */}
       <PrintPage footer={<ReportFooter orgName={orgName} pageLabel="Page 3" generatedLabel={generatedLabel} />}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: grid8 * 2, minHeight: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: sectionGap, minHeight: 0 }}>
           <PrintCard style={{ flex: "0 0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: grid8 * 1.5 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: cardPad, gap: grid8 }}>
               <p style={typeMeta}>KPI scorecards</p>
-              <span style={{ fontSize: 9, fontWeight: 700, color: BRAND.blue }}>{kpiRows.length} metrics</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: BRAND.blue, lineHeight: 1.3 }}>{kpiRows.length} metrics</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: grid8 * 1.5 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: grid8 * 1.25 }}>
               {kpiRows.map((item) => {
                 const { bg, fg, label } = kpiImpactStyle(item.kpi);
                 const displayVal = item.kpi.value !== null ? item.kpi.value.toFixed(1) : "—";
@@ -517,57 +501,66 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                     key={item.title}
                     style={{
                       border: `1px solid ${BRAND.line}`,
-                      borderRadius: 2,
-                      padding: `${grid8 * 1.5}px ${grid8 * 1.5}px`,
+                      borderRadius: 4,
+                      padding: `${grid8 * 1.25}px ${grid8 * 1.25}px`,
                       display: "grid",
-                      gridTemplateRows: "auto auto 1fr auto",
-                      gap: 4,
-                      minHeight: 86,
+                      gridTemplateRows: "auto auto auto auto",
+                      gap: 6,
                       background: "#fff",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
                       <span style={{ fontSize: 10, fontWeight: 800, color: BRAND.ink }}>{item.icon}</span>
-                      <span style={{ fontSize: 8, fontWeight: 800, padding: "2px 6px", borderRadius: 2, background: bg, color: fg }}>{label}</span>
+                      <span style={{ fontSize: 8, fontWeight: 800, padding: "2px 6px", borderRadius: 2, background: bg, color: fg, lineHeight: 1.25 }}>{label}</span>
                     </div>
-                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: BRAND.muted, lineHeight: 1.25 }}>{item.title}</p>
-                    <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: BRAND.ink, fontFamily: "var(--font-lexend), sans-serif", lineHeight: 1 }}>
+                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: BRAND.muted, lineHeight: 1.35 }}>{item.title}</p>
+                    <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: BRAND.ink, fontFamily: printFont, lineHeight: 1.2 }}>
                       {displayVal}
-                      <span style={{ fontSize: 10, fontWeight: 600, color: BRAND.slate, marginLeft: 4 }}>{item.unit}</span>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: BRAND.slate, marginLeft: 4 }}>{item.unit}</span>
                     </p>
-                    <p style={{ margin: 0, fontSize: 8, color: BRAND.slate, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.kpi.status}</p>
+                    <p style={{ margin: 0, fontSize: 9, color: BRAND.slate, lineHeight: 1.35, wordBreak: "break-word" }}>{item.kpi.status}</p>
                   </div>
                 );
               })}
             </div>
           </PrintCard>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: grid8 * 2, flex: 1, minHeight: 0 }}>
-            <PrintCard style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: sectionGap, alignItems: "start" }}>
+            <PrintCard style={{ display: "flex", flexDirection: "column" }}>
               <p style={typeMeta}>Strengths & gaps</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: grid8 * 2, marginTop: grid8 * 2, flex: 1, minHeight: 0 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: grid8 * 1.5, minHeight: 0 }}>
-                  <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: BRAND.green }}>Strengths</p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: cardPad,
+                  marginTop: cardPad,
+                  alignItems: "start",
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: grid8 * 1.25, minWidth: 0, width: "100%" }}>
+                  <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: BRAND.green, lineHeight: 1.35 }}>Strengths</p>
                   {strengths.slice(0, 4).map((t, i) => (
-                    <div key={i} style={{ padding: grid8 * 1.5, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 2, fontSize: 10, lineHeight: 1.45, color: "#14532d" }}>
+                    <div key={i} style={{ padding: grid8 * 1.25, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 4, fontSize: 10, lineHeight: 1.45, color: "#14532d" }}>
                       {t}
                     </div>
                   ))}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: grid8 * 1.5, minHeight: 0 }}>
-                  <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: BRAND.red }}>Gaps</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: grid8 * 1.25, minWidth: 0, width: "100%" }}>
+                  <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: BRAND.red, lineHeight: 1.35 }}>Gaps</p>
                   {gaps.slice(0, 4).map((g, i) => (
                     <div
                       key={i}
                       style={{
-                        padding: grid8 * 1.5,
-                        borderRadius: 2,
+                        padding: grid8 * 1.25,
+                        borderRadius: 4,
                         border: `1px solid ${riskColor[g.severity] ?? BRAND.line}55`,
                         background: "#fff",
                         fontSize: 10,
                         lineHeight: 1.45,
                         color: BRAND.ink,
                         display: "flex",
+                        flexDirection: "row",
+                        alignItems: "flex-start",
                         gap: grid8,
                       }}
                     >
@@ -578,23 +571,23 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                           fontWeight: 800,
                           color: "#fff",
                           background: riskColor[g.severity] ?? BRAND.slate,
-                          padding: "2px 6px",
+                          padding: "3px 6px",
                           borderRadius: 2,
-                          height: "fit-content",
+                          lineHeight: 1.2,
                         }}
                       >
                         {g.severity}
                       </span>
-                      <span>{g.text}</span>
+                      <span style={{ flex: 1, minWidth: 0, wordBreak: "break-word" }}>{g.text}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </PrintCard>
 
-            <PrintCard style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+            <PrintCard style={{ display: "flex", flexDirection: "column" }}>
               <p style={typeMeta}>Executive action pathway</p>
-              <div style={{ position: "relative", marginTop: grid8 * 2, flex: 1, minHeight: 0 }}>
+              <div style={{ position: "relative", marginTop: cardPad }}>
                 <div
                   style={{
                     position: "absolute",
@@ -606,11 +599,11 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                     borderRadius: 1,
                   }}
                 />
-                <div style={{ display: "flex", flexDirection: "column", gap: grid8 * 1.5, paddingLeft: grid8 * 5 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: grid8 * 1.25, paddingLeft: grid8 * 5 }}>
                   {roadmapOrdered.slice(0, 5).map((item, index) => {
                     const color = roadmapColor[item.timeline] ?? BRAND.slate;
                     return (
-                      <div key={index} style={{ display: "flex", gap: grid8 * 1.5, alignItems: "flex-start" }}>
+                      <div key={index} style={{ display: "flex", gap: grid8 * 1.25, alignItems: "flex-start" }}>
                         <div
                           style={{
                             width: 14,
@@ -623,10 +616,10 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
                             flexShrink: 0,
                           }}
                         />
-                        <div style={{ flex: 1, border: `1px solid ${BRAND.line}`, borderRadius: 2, padding: grid8 * 1.5, background: "#fff" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", gap: grid8, marginBottom: 4 }}>
-                            <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: BRAND.ink }}>{item.action}</p>
-                            <span style={{ fontSize: 8, fontWeight: 800, color, whiteSpace: "nowrap" }}>{item.timeline}</span>
+                        <div style={{ flex: 1, minWidth: 0, border: `1px solid ${BRAND.line}`, borderRadius: 4, padding: grid8 * 1.25, background: "#fff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: grid8, marginBottom: 4, alignItems: "flex-start" }}>
+                            <p style={{ margin: 0, fontSize: 10, fontWeight: 800, color: BRAND.ink, lineHeight: 1.35 }}>{item.action}</p>
+                            <span style={{ fontSize: 8, fontWeight: 800, color, whiteSpace: "nowrap", lineHeight: 1.3, flexShrink: 0 }}>{item.timeline}</span>
                           </div>
                           <p style={{ margin: 0, fontSize: 9, color: BRAND.muted, lineHeight: 1.45 }}>{item.impact}</p>
                         </div>
@@ -642,36 +635,40 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
 
       {/* —— Page 4: Regulatory + executive insight + recommendations —— */}
       <PrintPage footer={<ReportFooter orgName={orgName} pageLabel="Page 4" generatedLabel={generatedLabel} />}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: grid8 * 2, minHeight: 0 }}>
-          <PrintCard style={{ flex: "1 1 38%", display: "flex", flexDirection: "column", minHeight: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: sectionGap, minHeight: 0 }}>
+          <PrintCard style={{ display: "flex", flexDirection: "column", flex: "0 0 auto" }}>
             <p style={typeMeta}>Regulatory readiness</p>
-            <div style={{ marginTop: grid8 * 2, display: "flex", flexDirection: "column", gap: grid8 * 1.5, flex: 1, overflow: "hidden" }}>
+            <div style={{ marginTop: cardPad, display: "flex", flexDirection: "column", gap: grid8 * 1.25 }}>
               {regulatory.slice(0, 7).map((reg, i) => (
                 <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 52px 52px", gap: grid8 * 1.5, alignItems: "center" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 52px 52px", gap: grid8 * 1.5, alignItems: "start" }}>
                     <p
                       style={{
                         margin: 0,
+                        paddingTop: 2,
                         fontSize: 10,
                         fontWeight: 700,
                         color: BRAND.ink,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        lineHeight: 1.4,
+                        wordBreak: "break-word",
+                        overflowWrap: "anywhere",
+                        minWidth: 0,
                       }}
                     >
                       {reg.regulation}
                     </p>
-                    <span style={{ fontSize: 11, fontWeight: 900, textAlign: "right" }}>{reg.readiness}%</span>
+                    <span style={{ fontSize: 11, fontWeight: 900, textAlign: "right", lineHeight: 1.3, paddingTop: 2 }}>{reg.readiness}%</span>
                     <span
                       style={{
                         fontSize: 8,
                         fontWeight: 800,
                         textAlign: "center",
-                        padding: "3px 0",
-                        borderRadius: 2,
-                        background: `${riskColor[reg.risk] ?? BRAND.slate}18`,
-                        color: riskColor[reg.risk] ?? BRAND.slate,
+                        padding: "4px 4px",
+                        borderRadius: 4,
+                        lineHeight: 1.25,
+                        background: `${riskColor[reg.risk] ?? BRAND.slate}22`,
+                        color: BRAND.ink,
+                        border: `1px solid ${riskColor[reg.risk] ?? BRAND.slate}44`,
                       }}
                     >
                       {reg.risk}
@@ -687,11 +684,10 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
 
           <div
             style={{
-              flex: "1 1 32%",
-              borderRadius: 3,
-              padding: grid8 * 2.5,
-              border: "1px solid #bbf7d0",
-              background: "linear-gradient(135deg, #ecfdf5 0%, #f8fafc 55%, #ffffff 100%)",
+              borderRadius: 4,
+              padding: cardPad * 1.33,
+              border: "1px solid #86efac",
+              background: "linear-gradient(135deg, #ecfdf5 0%, #f8fafc 70%, #ffffff 100%)",
               position: "relative",
               overflow: "hidden",
             }}
@@ -699,21 +695,21 @@ export function ReportPdfCapture({ data }: { data: DownloadReportData }) {
             <p style={{ ...typeMeta, color: "#166534" }}>Executive insight</p>
             <p
               style={{
-                margin: "14px 0 0",
-                fontSize: 13,
-                lineHeight: 1.65,
-                color: "#064e3b",
-                fontFamily: "var(--font-lexend), sans-serif",
-                fontStyle: "italic",
+                margin: "10px 0 0",
+                fontSize: 12,
+                lineHeight: 1.55,
+                color: BRAND.ink,
+                fontFamily: printFont,
+                fontWeight: 500,
               }}
             >
               “{execInsight}”
             </p>
           </div>
 
-          <PrintCard style={{ flex: "1 1 28%", display: "flex", flexDirection: "column" }}>
+          <PrintCard style={{ display: "flex", flexDirection: "column" }}>
             <p style={typeMeta}>Final recommendations</p>
-            <ol style={{ margin: `${grid8 * 2}px 0 0`, paddingLeft: 18, color: BRAND.ink, fontSize: 11, lineHeight: 1.55, flex: 1 }}>
+            <ol style={{ margin: `${cardPad}px 0 0`, paddingLeft: 18, color: BRAND.ink, fontSize: 11, lineHeight: 1.5 }}>
               {recommendations.map((r, i) => (
                 <li key={i} style={{ marginBottom: 6 }}>
                   {r}

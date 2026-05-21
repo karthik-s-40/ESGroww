@@ -83,50 +83,131 @@ export default async function SummaryPage() {
   }
 
   return (
-    <PageWrapper maxWidth="wide" dense id="summary-report">
-      
-      {/* HERO SECTION */}
-      <div className="bg-gradient-to-r from-emerald-800 to-emerald-600 rounded-xl p-5 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <PageTitle className="text-white">ESG Intelligence Center</PageTitle>
-          <BodyText className="text-emerald-100 mt-1 max-w-xl">
-            Real-time sustainability readiness, operational analytics, carbon intelligence, and ESG scoring insights.
-          </BodyText>
-          <div className="mt-4 flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
-            <GoToResultsButton />
-            <DownloadSummaryButton targetId="summary-report" />
+    <div id="summary-report" className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
+
+      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+
+        {/* HERO */}
+        <div className="bg-gradient-to-r from-emerald-700 to-emerald-500 rounded-2xl p-4 sm:p-5 text-white shadow-lg">
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+            <div>
+
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+                ESG Intelligence Center
+              </h1>
+
+              <p className="mt-2 text-xs md:text-sm text-emerald-50 max-w-2xl">
+                Real-time sustainability
+                readiness, operational
+                analytics, carbon intelligence,
+                and ESG scoring insights.
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-center gap-3" data-html2canvas-ignore="true">
+                <GoToResultsButton />
+                <DownloadSummaryButton targetId="summary-report" />
+              </div>
+
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/20 w-full sm:w-auto">
+
+              <div className="flex items-center">
+
+                <p className="text-sm text-emerald-100">
+                  ESG Readiness Score
+                </p>
+
+                <InfoTooltip text="Calculated using Environmental, Social, and Governance scores derived from emissions, water recycling, and reporting completeness." />
+
+              </div>
+
+              <h2 className="text-5xl font-bold mt-1">
+                {overallScore}
+              </h2>
+
+              <p className="mt-1 text-sm text-emerald-50">
+                {readiness}
+              </p>
+
+            </div>
+
           </div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md rounded-xl px-5 py-3 border border-white/20 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-emerald-100 uppercase tracking-wide">ESG Readiness Score</span>
-            <InfoTooltip text="Calculated using Environmental, Social, and Governance scores derived from emissions, water recycling, and reporting completeness." />
+        {/* SCORE + METRICS */}
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+
+          {/* SCORES */}
+          <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+            <ScoreBreakdownCard
+              title="ENV"
+              score={environmentalScore}
+            />
+
+            <ScoreBreakdownCard
+              title="SOC"
+              score={socialScore}
+            />
+
+            <ScoreBreakdownCard
+              title="GOV"
+              score={governanceScore}
+            />
+
           </div>
-          <MetricValue className="text-white text-4xl mt-1">{overallScore}</MetricValue>
-          <HelperText className="text-emerald-100 mt-0.5 font-medium">{readiness}</HelperText>
+
+          {/* METRICS */}
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+
+            <MetricCard
+              label="Electricity"
+              value={`${Math.round(
+                data.totals.totalElectricity
+              )} kWh`}
+            />
+
+            <MetricCard
+              label="Diesel"
+              value={`${Math.round(
+                data.totals.totalDiesel
+              )} L`}
+            />
+
+            <MetricCard
+              label="Water"
+              value={`${Math.round(
+                data.totals.totalWater
+              )} KL`}
+            />
+
+            <MetricCard
+              label="Waste"
+              value={`${Math.round(
+                data.totals.totalWaste
+              )} kg`}
+            />
+
+            <MetricCard
+              label="CO₂"
+              value={`${Math.round(
+                totalEmissions
+              )} kg`}
+            />
+
+          </div>
+
         </div>
-      </div>
 
-      {/* METRICS HEADER */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mt-1">
-        <ScoreBreakdownCard title="ENV Score" score={environmentalScore} />
-        <ScoreBreakdownCard title="SOC Score" score={socialScore} />
-        <ScoreBreakdownCard title="GOV Score" score={governanceScore} />
-        <MetricCard label="Electricity" value={`${Math.round(data.totals.totalElectricity)} kWh`} />
-        <MetricCard label="Diesel" value={`${Math.round(data.totals.totalDiesel)} L`} />
-        <MetricCard label="Water" value={`${Math.round(data.totals.totalWater)} KL`} />
-        <MetricCard label="Waste" value={`${Math.round(data.totals.totalWaste)} kg`} />
-        <MetricCard label="Total CO₂" value={`${Math.round(totalEmissions)} kg`} />
-      </div>
+        {/* MAIN GRID */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
 
-      {/* BENTO GRID CONTENT */}
-      <BentoGrid
-        leftClassName="lg:col-span-1 xl:col-span-4"
-        centerClassName="lg:col-span-1 xl:col-span-4"
-        rightClassName="lg:col-span-2 xl:col-span-4"
-        left={
-          <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col h-full">
+          {/* COVERAGE */}
+          <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden">
+
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-1.5">
                 <SectionTitle>Data Coverage</SectionTitle>
@@ -145,14 +226,23 @@ export default async function SummaryPage() {
               <CoverageBar label="Refrigerants" value={data.coverage.refrigerantMonths} />
             </div>
           </div>
-        }
-        center={
-          <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col h-full gap-4">
-            <div>
-              <SectionTitle className="mb-3">AI ESG Insights</SectionTitle>
-              <div className="space-y-2">
-                {insights.map((item, index) => <InsightCard key={index} text={item} />)}
-              </div>
+
+          {/* INSIGHTS */}
+          <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden">
+
+            <h2 className="text-xl font-bold text-slate-900 mb-4">
+              AI ESG Insights
+            </h2>
+
+            <div className="space-y-3">
+
+              {insights.map((item, index) => (
+                <InsightCard
+                  key={index}
+                  text={item}
+                />
+              ))}
+
             </div>
             <div>
               <SectionTitle className="mb-3">ESG Drivers</SectionTitle>
@@ -163,13 +253,19 @@ export default async function SummaryPage() {
               </div>
             </div>
           </div>
-        }
-        right={
-          <div className="flex flex-col gap-3 h-full">
-            <div className="bg-white rounded-xl border border-border p-4 shadow-sm">
-              <div className="flex items-center gap-1.5 mb-3">
-                <SectionTitle>Emissions Breakdown</SectionTitle>
-                <InfoTooltip text="Calculated from annualized operational activity using shared emission factors." />
+
+          {/* EMISSIONS + ACTIONS */}
+          <div className="xl:col-span-4 space-y-4">
+
+            {/* EMISSIONS */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+
+              <div className="flex items-center mb-4">
+
+                <h2 className="text-xl font-bold text-slate-900">Emissions</h2>
+
+                <InfoTooltip text="Calculated from annualized electricity, diesel, transport fuel, and refrigerant activity using shared emission factors." />
+
               </div>
               <div className="space-y-2">
                 <EmissionRow label="Electricity" detail={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * 0.82)} kgCO₂e`} />
