@@ -5,10 +5,15 @@ import { cookies } from "next/headers";
 
 export async function getAssessmentCycles() {
   try {
-    const cycles = await prisma.assessmentCycle.findMany({
+    const dbCycles = await prisma.assessmentCycle.findMany({
       orderBy: { startDate: "desc" },
     });
     
+    const cycles = dbCycles.map(c => ({
+      ...c,
+      year: c.startDate ? c.startDate.getFullYear() : new Date().getFullYear(),
+    }));
+
     const cookieStore = await cookies();
     let activeId = cookieStore.get("activeAssessmentCycleId")?.value;
     
@@ -23,6 +28,25 @@ export async function getAssessmentCycles() {
     console.error("Failed to get assessment cycles", error);
     return { cycles: [], activeId: null };
   }
+}
+
+export async function createAssessmentCycle(name: string, year: number) {
+  const hospital = await prisma.hospital.findFirst();
+  if (!hospital) throw new Error("No hospital found");
+  
+  const cycle = await prisma.assessmentCycle.create({
+    data: {
+      name,
+      hospitalId: hospital.id,
+      startDate: new Date(`${year}-01-01`),
+      endDate: new Date(`${year}-12-31`),
+    }
+  });
+  
+  const cookieStore = await cookies();
+  cookieStore.set("activeAssessmentCycleId", cycle.id, { path: "/" });
+  
+  return { success: true, cycle };
 }
 
 export async function setActiveAssessmentCycle(cycleId: string) {

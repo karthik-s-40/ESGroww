@@ -30,7 +30,8 @@ type NavItem = {
 const MAIN_NAV: NavItem[] = [
   { href: "/esg-readiness-platform", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/summary", label: "ESG Readiness", icon: Upload },
-  { href: "/where-i-stand", label: "Results", icon: BarChart2 },
+  { href: "/results", label: "Results", icon: BarChart2 },
+  { href: "/where-i-stand", label: "Where I Stand", icon: PieChart },
   { href: "/kpi", label: "KPIs", icon: PieChart },
   { href: "/metrics", label: "Metrics", icon: ShieldAlert },
   { href: "/history", label: "Assessment History", icon: History },
