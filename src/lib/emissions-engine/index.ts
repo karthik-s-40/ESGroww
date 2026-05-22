@@ -9,8 +9,7 @@ export function calculateScope2Emissions(
   // preserve existing signature: no renewable passed here — if config exposes renewableKwh, use it
   const renewableKwh = (config as any)?.renewableKwh ?? 0;
   const res = centralCalculateScope2(electricityKwh, factor, renewableKwh);
-  // return kg CO2e to preserve original usages (original function returned kg)
-  return res.kgCO2e;
+  return res.tCO2e;
 }
 
 export function calculateDieselEmissions(
@@ -18,7 +17,7 @@ export function calculateDieselEmissions(
   config?: ESGConfiguration
 ) {
   const factor = (config as any)?.emissionFactors?.["diesel"] ?? (config as any)?.emission?.diesel ?? config?.defaultFactors?.diesel ?? 0;
-  return dgDieselLitres * factor;
+  return (dgDieselLitres * factor) / 1000;
 }
 
 export function calculateTransportEmissions(
@@ -26,7 +25,7 @@ export function calculateTransportEmissions(
   config?: ESGConfiguration
 ) {
   const factor = (config as any)?.emissionFactors?.["ambulancefuel"] ?? (config as any)?.emission?.ambulancefuel ?? config?.defaultFactors?.ambulanceFuel ?? 0;
-  return ambulanceFuelLitres * factor;
+  return (ambulanceFuelLitres * factor) / 1000;
 }
 
 export function calculateRefrigerantEmissions(
@@ -47,7 +46,7 @@ export function calculateRefrigerantEmissions(
                (config as any)?.emission?.[typeKey] ??
                fallbackRefrigerantFactors[typeKey] ??
                0;
-  return factor * leakKg;
+  return (factor * leakKg) / 1000;
 }
 
 export function calculateWasteEmissions(
@@ -55,7 +54,7 @@ export function calculateWasteEmissions(
   config?: ESGConfiguration
 ) {
   const factor = (config as any)?.emissionFactors?.["wastekg"] ?? (config as any)?.emission?.wastekg ?? config?.defaultFactors?.wasteKg ?? 0;
-  return totalWasteKg * factor;
+  return (totalWasteKg * factor) / 1000;
 }
 
 export function calculateWaterEmissions(
@@ -63,7 +62,7 @@ export function calculateWaterEmissions(
   config?: ESGConfiguration
 ) {
   const factor = (config as any)?.emissionFactors?.["totalwaterconsumptionkl"] ?? (config as any)?.emission?.totalwaterconsumptionkl ?? config?.defaultFactors?.totalWaterConsumptionKl ?? 0;
-  return totalWaterConsumptionKl * factor;
+  return (totalWaterConsumptionKl * factor) / 1000;
 }
 
 export function calculateRenewablePercentage(

@@ -4,13 +4,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatWithUnit, UNIT } from "@/lib/calculations";
 
 interface EmissionsData {
-  scope2EmissionsKg: number;
-  dieselEmissionsKg: number;
-  transportEmissionsKg: number;
-  refrigerantEmissionsKg: number;
+  scope2EmissionsTCO2e: number;
+  dieselEmissionsTCO2e: number;
+  transportEmissionsTCO2e: number;
+  refrigerantEmissionsTCO2e: number;
   // Optional formatted total for display (preferred)
   totalEmissionsFormatted?: string;
-  totalEmissionsKg?: number;
+  totalEmissionsTCO2e?: number;
 }
 
 interface Props {
@@ -19,10 +19,10 @@ interface Props {
 
 export function EmissionsChart({ emissions }: Props) {
   const data = [
-    { name: "Scope 2", value: emissions.scope2EmissionsKg, color: "#10b981" },
-    { name: "Diesel", value: emissions.dieselEmissionsKg, color: "#0ea5e9" },
-    { name: "Transport", value: emissions.transportEmissionsKg, color: "#f59e0b" },
-    { name: "Refrigerants", value: emissions.refrigerantEmissionsKg, color: "#8b5cf6" },
+    { name: "Scope 2", value: emissions.scope2EmissionsTCO2e, color: "#10b981" },
+    { name: "Diesel", value: emissions.dieselEmissionsTCO2e, color: "#0ea5e9" },
+    { name: "Transport", value: emissions.transportEmissionsTCO2e, color: "#f59e0b" },
+    { name: "Refrigerants", value: emissions.refrigerantEmissionsTCO2e, color: "#8b5cf6" },
   ];
 
   return (
@@ -46,14 +46,14 @@ export function EmissionsChart({ emissions }: Props) {
               axisLine={false}
               tickLine={false}
               label={{
-                value: "CO₂e (kg)",
+                value: "CO₂e (tCO2e)",
                 angle: -90,
                 position: "insideLeft",
                 style: { textAnchor: "middle" },
               }}
             />
             <Tooltip
-              formatter={(value) => [formatWithUnit(Number(value ?? 0), UNIT.EMISSIONS_KG), ""]}
+              formatter={(value) => [formatWithUnit(Number(value ?? 0), UNIT.EMISSIONS_T), ""]}
               labelStyle={{ color: "#374151" }}
               contentStyle={{
                 backgroundColor: "#ffffff",
@@ -71,7 +71,7 @@ export function EmissionsChart({ emissions }: Props) {
       </div>
 
       <div className="mt-4 text-sm text-slate-500">
-        Total Emissions: {emissions.totalEmissionsFormatted ?? formatWithUnit(emissions.totalEmissionsKg ?? 0, UNIT.EMISSIONS_KG)}
+        Total Emissions: {emissions.totalEmissionsFormatted ?? formatWithUnit(emissions.totalEmissionsTCO2e ?? 0, UNIT.EMISSIONS_T)}
       </div>
     </div>
   );

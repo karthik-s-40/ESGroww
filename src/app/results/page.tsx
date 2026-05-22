@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DownloadReportButton } from "@/components/shared/DownloadReportButton";
+import { DownloadReportButton, type DownloadReportData } from "@/components/shared/DownloadReportButton";
 // ReportPdfCapture removed from import
 import { Link2, Mail, Phone } from "lucide-react";
 import { type KPIBenchmark } from "@/lib/kpiUtils";
@@ -17,9 +17,11 @@ interface AssessmentData {
   confidence: number;
   totalEmissions: number;
   annualizedValues: { electricity: number; water: number; fuel: number; waste: number };
+  formattedAnnualizedValues?: { electricity?: string; water?: string; fuel?: string; waste?: string };
   certificationReadiness?: { name: string; score: number; status: string }[];
   categoryScores?: { energy: number; water: number; waste: number; governance: number };
-  emissions?: { scope1: number; scope2: number; scope3: number };
+  emissions?: { scope1?: number | null; scope2?: number | null; scope3?: number | null };
+  formattedEmissions?: { scope1?: string; scope2?: string; scope3?: string; total?: string };
   strengths?: string[];
   gaps?: { text: string; severity: "High" | "Medium" | "Low" }[];
   regulatoryReadiness?: { regulation: string; readiness: number; risk: "Low" | "Medium" | "Medium-High" | "High" }[];
@@ -69,6 +71,64 @@ const formatCertName = (name: string): string => {
   };
   return nameMap[name] || name;
 };
+
+const EMISSION_UNIT = "tCO₂e";
+
+const emissionFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const toFiniteNumber = (value: unknown, fallback = 0): number => {
+  const numericValue = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numericValue) ? numericValue : fallback;
+};
+
+const formatEmissionValue = (value: unknown, fallback = 0): string => {
+  return emissionFormatter.format(toFiniteNumber(value, fallback));
+};
+
+function EmissionCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: unknown;
+  color: string;
+}) {
+  const numericValue = toFiniteNumber(value, 0);
+  const emissionValueText = formatEmissionValue(numericValue);
+
+  return (
+    <div
+      className="flex h-full min-h-[96px] min-w-0 flex-col rounded-2xl border border-slate-200 bg-white/90 p-2.5 shadow-[0_1px_0_rgba(15,23,42,0.04)] ring-1 ring-black/5"
+      style={{ boxShadow: `0 10px 24px ${color}10` }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="m-0 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+          {label}
+        </p>
+      </div>
+
+      <div className="mt-2.5 flex min-w-0 flex-col items-start gap-0.5">
+        <span
+          className="min-w-0 text-[clamp(1rem,2vw,1.3rem)] font-extrabold tabular-nums leading-none tracking-tight"
+          style={{ color }}
+        >
+          {emissionValueText}
+        </span>
+        <span className="shrink-0 text-[11px] font-semibold leading-none text-slate-500">
+          {EMISSION_UNIT}
+        </span>
+      </div>
+
+      <p className="m-0 mt-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+        per year
+      </p>
+    </div>
+  );
+}
  
  
 // ─── Gauge SVG ────────────────────────────────────────────────────────────────
@@ -99,7 +159,9 @@ function Bar({ value, color = "#3b82f6" }: { value: number; color?: string }) {
  
 // ─── Radar chart (SVG) ────────────────────────────────────────────────────────
 function Radar({ scores }: { scores: { label: string; value: number }[] }) {
-  const cx = 80; const cy = 80; const r = 60;
+  const cx = 80;
+  const cy = 80;
+  const r = 60;
   const n = scores.length;
   const pts = scores.map((s, i) => {
     const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
@@ -107,11 +169,13 @@ function Radar({ scores }: { scores: { label: string; value: number }[] }) {
     return { x: cx + rv * Math.cos(angle), y: cy + rv * Math.sin(angle) };
   });
   const gridPts = (frac: number) =>
-    scores.map((_, i) => {
-      const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
-      return `${cx + frac * r * Math.cos(angle)},${cy + frac * r * Math.sin(angle)}`;
-    }).join(" ");
-  const polyPts = pts.map(p => `${p.x},${p.y}`).join(" ");
+    scores
+      .map((_, i) => {
+        const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+        return `${cx + frac * r * Math.cos(angle)},${cy + frac * r * Math.sin(angle)}`;
+      })
+      .join(" ");
+  const polyPts = pts.map((p) => `${p.x},${p.y}`).join(" ");
   const labelPts = scores.map((s, i) => {
     const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
     const lv = r + 14;
@@ -119,7 +183,7 @@ function Radar({ scores }: { scores: { label: string; value: number }[] }) {
   });
   return (
     <svg width={160} height={160} viewBox="0 0 160 160">
-      {[0.25, 0.5, 0.75, 1].map(f => (
+      {[0.25, 0.5, 0.75, 1].map((f) => (
         <polygon key={f} points={gridPts(f)} fill="none" stroke="#e2e8f0" strokeWidth="0.8" />
       ))}
       {scores.map((_, i) => {
@@ -178,6 +242,14 @@ export default function ResultsPage() {
  
   const catScores = data.categoryScores ?? { energy: 0, water: 0, waste: 0, governance: 0 };
   const emis = data.emissions ?? { scope1: 0, scope2: 0, scope3: 0 };
+  const downloadReportData: DownloadReportData = {
+    ...data,
+    emissions: {
+      scope1: toFiniteNumber(emis.scope1),
+      scope2: toFiniteNumber(emis.scope2),
+      scope3: toFiniteNumber(emis.scope3),
+    },
+  };
   const certEntries = Array.isArray(data.certificationReadiness)
   ? data.certificationReadiness
   : [];
@@ -268,7 +340,7 @@ export default function ResultsPage() {
         </div>
         <div data-html2canvas-ignore="true" className="flex w-full flex-wrap gap-2 items-center sm:w-auto sm:flex-nowrap">
           <DownloadReportButton
-            data={data}
+            data={downloadReportData}
             captureRootId="pdf-report-capture"
             label={loaded ? "Download Report" : "Loading report..."}
             className="min-w-[140px] flex-1 sm:flex-none bg-slate-900 text-white hover:bg-slate-800"
@@ -359,7 +431,7 @@ export default function ResultsPage() {
             ))}
             <div className="bg-slate-50 rounded-xl p-2.5 mt-2.5 border border-border">
               <p className="m-0 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Total Emissions</p>
-              <p className="m-0 mt-0.5 text-lg font-black text-slate-900">{data.formattedEmissions?.total ?? formatWithUnit(data.totalEmissions, UNIT.EMISSIONS_KG)}</p>
+              <p className="m-0 mt-0.5 text-lg font-black text-slate-900 tabular-nums whitespace-nowrap">{formatEmissionValue(data.totalEmissions)}</p>
               <p className="m-0 text-[10px] text-muted-foreground font-medium">per year</p>
             </div>
           </div>
@@ -408,18 +480,17 @@ export default function ResultsPage() {
           </div>
  
           <div className="mt-2.5 border-t border-slate-100 pt-2.5">
-            <p className="m-0 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Emissions Breakdown</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="m-0 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Emissions Breakdown</p>
+              <p className="m-0 text-[9px] font-medium uppercase tracking-[0.18em] text-slate-400">tCO₂e</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 items-stretch">
               {[
-                { label: "Scope 1", val: emis.scope1, color: "#dc2626" },
-                { label: "Scope 2", val: emis.scope2, color: "#ea580c" },
-                { label: "Scope 3", val: emis.scope3, color: "#ca8a04" },
-              ].map(s => (
-                <div key={s.label} className="flex-1 rounded-xl p-2 text-center border" style={{ background: `${s.color}10`, borderColor: `${s.color}30` }}>
-                  <p className="m-0 text-[10px] font-bold" style={{ color: s.color }}>{s.label}</p>
-                  <p className="m-0 mt-0.5 text-base font-black" style={{ color: s.color }}>{data.formattedEmissions?.[s.label.toLowerCase().replace(/\s+/g, '') as "scope1" | "scope2" | "scope3"] ?? formatWithUnit(s.val, UNIT.EMISSIONS_KG)}</p>
-                  <p className="m-0 text-[9px] text-muted-foreground">per year</p>
-                </div>
+                { label: "Scope 1", val: emis.scope1, color: "#0f766e" },
+                { label: "Scope 2", val: emis.scope2, color: "#0d9488" },
+                { label: "Scope 3", val: emis.scope3, color: "#14b8a6" },
+              ].map((s) => (
+                <EmissionCard key={s.label} label={s.label} value={s.val} color={s.color} />
               ))}
             </div>
           </div>
