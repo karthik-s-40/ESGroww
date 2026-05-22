@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ExternalLink, Radio } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -29,6 +29,7 @@ function titleForPath(path: string | null): string {
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const heading = titleForPath(pathname);
 
   return (
@@ -47,13 +48,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <Radio className="h-3 w-3 animate-pulse" aria-hidden />
               Live
             </span>
-            <Link
-              href="/"
+            <button
+              onClick={() => {
+                document.cookie = "admin_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                router.push("/");
+              }}
               className="inline-flex items-center gap-1 rounded-lg border border-[#d5ddd6] bg-white/70 px-2.5 py-1.5 text-[11px] font-medium text-[#004958] shadow-sm transition hover:border-[#00673F]/40 hover:text-[#00673F]"
             >
               Exit admin
               <ExternalLink className="h-3 w-3 opacity-70" aria-hidden />
-            </Link>
+            </button>
           </div>
         </header>
 
