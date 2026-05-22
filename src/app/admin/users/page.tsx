@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { User, ShieldAlert, Key } from "lucide-react";
+import { User, ShieldAlert, Key, Trash2 } from "lucide-react";
 import { adminGlassCard, AdminEmpty } from "@/components/admin/admin-ui";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -66,6 +66,28 @@ export default function UsersAdminPage() {
       }
     } catch (e) {
       alert("Error updating role");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleDelete(userId: string, email: string) {
+    if (!confirm(`Are you sure you want to permanently remove the user ${email}? This action cannot be undone.`)) return;
+
+    try {
+      setUpdatingId(userId);
+      const res = await fetch(`/api/admin/users?id=${userId}`, {
+        method: "DELETE",
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to delete user");
+      } else {
+        setUsers(users.filter((u) => u.id !== userId));
+      }
+    } catch (e) {
+      alert("Error deleting user");
     } finally {
       setUpdatingId(null);
     }
@@ -136,7 +158,19 @@ export default function UsersAdminPage() {
                   {user.role === 'ADMIN' ? <ShieldAlert className="h-5 w-5" /> : <User className="h-5 w-5" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-base font-semibold text-[#15221a]">{user.fullName}</h2>
+                  <div className="flex justify-between items-start">
+                    <h2 className="truncate text-base font-semibold text-[#15221a]">{user.fullName}</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-rose-500 hover:text-rose-600 hover:bg-rose-50 -mt-1 -mr-1"
+                      onClick={() => handleDelete(user.id, user.email)}
+                      disabled={updatingId === user.id}
+                      title="Remove User"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                   <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                   
                   <div className="mt-3 flex items-center gap-2">

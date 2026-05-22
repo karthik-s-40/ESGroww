@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { buildResultsPdfWithTemplate, triggerPdfDownload } from "@/lib/pdf/buildResultsPdfWithTemplate";
+import { pdf } from "@react-pdf/renderer";
+import { VectorReportTemplate } from "@/components/pdf/VectorReportTemplate";
 import { type KPIBenchmark } from "@/lib/kpiUtils";
 
 export interface DownloadReportData {
@@ -76,15 +77,21 @@ export function DownloadReportButton({
   };
 
   const handleDownload = async () => {
-    const el = document.getElementById(captureRootId);
-    if (!(el instanceof HTMLElement)) {
-      window.alert("Could not find the report content to export.");
-      return;
-    }
     setBusy(true);
     try {
-      const bytes = await buildResultsPdfWithTemplate(el);
-      triggerPdfDownload(bytes, safeFileName());
+      // 1. Generate PDF blob using @react-pdf/renderer
+      const blob = await pdf(<VectorReportTemplate data={data} />).toBlob();
+      
+      // 2. Trigger download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = safeFileName();
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     } catch (e) {
       console.error(e);
       window.alert("Could not prepare the PDF. Please try again or refresh the page.");
