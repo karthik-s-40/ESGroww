@@ -23,16 +23,29 @@ export interface ESGConfiguration {
 }
 
 const fetchConfigurationFromDb = async (): Promise<ESGConfiguration> => {
+  const safeFindMany = async (getter: () => any): Promise<any[]> => {
+    try {
+      const model = getter();
+      if (!model || typeof model.findMany !== "function") {
+        return [];
+      }
+      const rows = await model.findMany();
+      return Array.isArray(rows) ? rows : [];
+    } catch {
+      return [];
+    }
+  };
+
   const [
     emissionFactorsData,
     benchmarksData,
     scoringData,
     kpiRangeData,
   ] = await Promise.all([
-    prisma.emissionFactor.findMany(),
-    prisma.benchmarkMaster.findMany(),
-    prisma.scoringWeight.findMany(),
-    prisma.kpiRange.findMany(),
+    safeFindMany(() => (prisma as any).emissionFactor),
+    safeFindMany(() => (prisma as any).benchmarkMaster),
+    safeFindMany(() => (prisma as any).scoringWeight),
+    safeFindMany(() => (prisma as any).kpiRange),
   ]);
 
   const emissionFactors: EmissionFactorsConfig = {};
@@ -90,8 +103,15 @@ const fetchConfigurationFromDb = async (): Promise<ESGConfiguration> => {
  * Cached fetch of the ESG Configuration.
  * Revalidated when the 'esg-config' tag is invalidated.
  */
-export const getESGConfiguration = unstable_cache(
+const cachedGetESGConfiguration = unstable_cache(
   fetchConfigurationFromDb,
-  ['esg-config-cache'],
-  { tags: ['esg-config'], revalidate: 3600 } // Revalidate at least every hour, or on-demand
+  ["esg-config-cache"],
+  { tags: ["esg-config"], revalidate: 3600 }
 );
+
+export const getESGConfiguration = async (): Promise<ESGConfiguration> => {
+  if (process.env.NODE_ENV === "test") {
+    return fetchConfigurationFromDb();
+  }
+  return cachedGetESGConfiguration();
+};

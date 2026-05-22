@@ -323,7 +323,7 @@ export default function CalculationsAdminPage() {
             <AdminSectionTitle
               eyebrow="Emissions"
               title="EmissionsSummary by scope"
-              description="kgCO₂e and tCO₂e with factorUsed string for audit defensibility."
+              description="tCO₂e with factorUsed string for audit defensibility."
             />
             <div className={adminGlassCard("p-0")}>
               <Table>

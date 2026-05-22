@@ -6,8 +6,23 @@ export function calculateCompleteness(monthsSampled: number): CompletenessResult
   return { completenessPct: Number(completenessPct.toFixed(2)), monthsSampled: m }
 }
 
-export function calculateOverallCompleteness(categoryCompletenesses: CompletenessResult[]) {
-  if (!categoryCompletenesses || categoryCompletenesses.length === 0) return 0
-  const avg = categoryCompletenesses.reduce((s, c) => s + c.completenessPct, 0) / categoryCompletenesses.length
+type CompletenessInput =
+  | CompletenessResult[]
+  | Record<string, number | CompletenessResult | null | undefined>
+
+export function calculateOverallCompleteness(categoryCompletenesses: CompletenessInput) {
+  const values = Array.isArray(categoryCompletenesses)
+    ? categoryCompletenesses
+    : Object.values(categoryCompletenesses ?? {})
+
+  if (values.length === 0) return 0
+
+  const normalized = values
+    .map((value) => (typeof value === 'number' ? value : value?.completenessPct))
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value))
+
+  if (normalized.length === 0) return 0
+
+  const avg = normalized.reduce((sum, completenessPct) => sum + completenessPct, 0) / normalized.length
   return Number(avg.toFixed(2))
 }

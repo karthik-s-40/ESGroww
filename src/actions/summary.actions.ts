@@ -4,10 +4,6 @@ import { prisma } from "@/lib/db";
 import { AppError, ERROR_MESSAGES } from "@/lib/errors";
 import { getESGConfiguration } from "@/lib/config-engine";
 import {
-  annualizeElectricity,
-  annualizeFuel,
-} from "@/lib/esgCalculations";
-import {
   calculateDieselEmissions,
   calculateRefrigerantEmissions,
   calculateScope2Emissions,
@@ -21,6 +17,8 @@ import {
 import { formatWithUnit, UNIT } from "@/lib/calculations";
 import { BRD_MIN_MONTHS_FOR_ANNUALIZATION } from "@/lib/upload/brdConstants";
 import {
+  annualizeElectricity,
+  annualizeFuel,
   annualizeValue,
   calculateESGReadinessScore,
   determineReadinessStage,
@@ -317,7 +315,7 @@ export async function getSummaryData(assessmentCycleId?: string) {
             renewablePercentage * 0.35 +
             waterRecyclePercentage * 0.25 +
             recyclableWastePercentage * 0.25 +
-            Math.max(0, 100 - totalEmissions / 1000) * 0.15
+            Math.max(0, 100 - totalEmissions) * 0.15
           )
         )
       )
@@ -449,7 +447,7 @@ export async function getSummaryData(assessmentCycleId?: string) {
       totalDiesel: formatWithUnit(totalDiesel, UNIT.DIESEL),
       totalTransportFuel: formatWithUnit(totalTransportFuel, UNIT.DIESEL),
       totalWaste: formatWithUnit(totalWaste, UNIT.WASTE),
-      totalEmissions: formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG),
+      totalEmissions: formatWithUnit(totalEmissions, UNIT.EMISSIONS_T),
     },
 
     percentages: {
@@ -519,11 +517,11 @@ export async function getSummaryData(assessmentCycleId?: string) {
     },
 
     formattedEmissions: {
-      electricityEmissions: formatWithUnit(Math.round(electricityEmissions), UNIT.EMISSIONS_KG),
-      dieselEmissions: formatWithUnit(Math.round(dieselEmissions), UNIT.EMISSIONS_KG),
-      transportEmissions: formatWithUnit(Math.round(transportEmissions), UNIT.EMISSIONS_KG),
-      refrigerantEmissions: formatWithUnit(Math.round(refrigerantEmissions), UNIT.EMISSIONS_KG),
-      total: formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG),
+      electricityEmissions: formatWithUnit(Math.round(electricityEmissions), UNIT.EMISSIONS_T),
+      dieselEmissions: formatWithUnit(Math.round(dieselEmissions), UNIT.EMISSIONS_T),
+      transportEmissions: formatWithUnit(Math.round(transportEmissions), UNIT.EMISSIONS_T),
+      refrigerantEmissions: formatWithUnit(Math.round(refrigerantEmissions), UNIT.EMISSIONS_T),
+      total: formatWithUnit(totalEmissions, UNIT.EMISSIONS_T),
     },
 
     checks,

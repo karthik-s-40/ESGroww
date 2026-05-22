@@ -6,7 +6,6 @@ import { getESGConfiguration } from "@/lib/config-engine";
 import { AppError, ERROR_MESSAGES } from "@/lib/errors";
  
 import {
-  calculateScope2Emissions,
   calculateDieselEmissions,
   calculateTransportEmissions,
   calculateRefrigerantEmissions,
@@ -19,10 +18,6 @@ import {
   calculateCategoryCompleteness,
   calculateOverallCompleteness,
   calculateConfidenceScore,
-  annualizeElectricity,
-  annualizeWater,
-  annualizeFuel,
-  annualizeWaste,
   calculateBenchmarkScores,
   calculateGapAnalysis,
   determineReadinessStage,
@@ -34,6 +29,14 @@ import {
   identifyStrengthsAndGaps,
   generatePriorityRoadmap,
 } from "@/lib/esgCalculations";
+import { calculateScope2Emissions } from "@/lib/emissions-engine";
+import {
+  annualizeElectricity,
+  annualizeWater,
+  annualizeFuel,
+  annualizeWaste,
+  annualizeValue,
+} from "@/lib/calculation-engine";
 import { formatWithUnit, UNIT } from "@/lib/calculations";
 import {
   evaluateEnergyIntensity,
@@ -172,6 +175,25 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         sum + row.dgDieselLitres,
       0
     );
+
+  const totalTransportFuel =
+    transportData.reduce(
+      (sum, row) =>
+        sum + row.ambulanceFuelLitres,
+      0
+    );
+
+  const totalRefrigerantEmissions =
+    refrigerantData.reduce(
+      (sum, row) =>
+        sum +
+        calculateRefrigerantEmissions(
+          row.refrigerantType,
+          row.refrigerantLeakKg,
+          config
+        ),
+      0
+    );
  
   const totalWaste =
     wasteData.reduce(
@@ -305,6 +327,22 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       annualizedElectricity,
       config
     );
+  const scope2EmissionsTCO2e =
+    typeof scope2Emissions === "object" && scope2Emissions !== null
+      ? scope2Emissions.tCO2e
+      : scope2Emissions;
+
+  const annualizedTransportFuel =
+    annualizeFuel(
+      totalTransportFuel,
+      annualizationDenominator(transportDistinctMonths)
+    );
+
+  const annualizedRefrigerantEmissions =
+    annualizeValue(
+      totalRefrigerantEmissions,
+      annualizationDenominator(refrigerantDistinctMonths)
+    );
  
   const dieselEmissions =
     calculateDieselEmissions(
@@ -313,27 +351,13 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
     );
  
   const transportEmissions =
-    transportData.reduce(
-      (sum, row) =>
-        sum +
-        calculateTransportEmissions(
-          row.ambulanceFuelLitres,
-          config
-        ),
-      0
+    calculateTransportEmissions(
+      annualizedTransportFuel,
+      config
     );
- 
+
   const refrigerantEmissions =
-    refrigerantData.reduce(
-      (sum, row) =>
-        sum +
-        calculateRefrigerantEmissions(
-          row.refrigerantType,
-          row.refrigerantLeakKg,
-          config
-        ),
-      0
-    );
+    annualizedRefrigerantEmissions;
  
   // Compute water and waste emissions (used for Scope 3)
   const wasteEmissions =
@@ -343,7 +367,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
     calculateWaterEmissions(annualizedWater, config);
  
   const totalEmissions =
-    scope2Emissions +
+    scope2EmissionsTCO2e +
     dieselEmissions +
     refrigerantEmissions +
     transportEmissions +
@@ -973,7 +997,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
  
       // Scope 2: purchased electricity
       scope2:
-        scope2Emissions,
+        scope2EmissionsTCO2e,
  
       // Scope 3: value chain — Transport + Waste + Water (as requested)
       scope3:
@@ -982,10 +1006,10 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         waterEmissions,
     },
       formattedEmissions: {
-        scope1: formatWithUnit(dieselEmissions + refrigerantEmissions, UNIT.EMISSIONS_KG),
-        scope2: formatWithUnit(scope2Emissions, UNIT.EMISSIONS_KG),
-        scope3: formatWithUnit(transportEmissions + wasteEmissions + waterEmissions, UNIT.EMISSIONS_KG),
-        total: formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG),
+          scope1: formatWithUnit(dieselEmissions + refrigerantEmissions, UNIT.EMISSIONS_T),
+          scope2: formatWithUnit(scope2EmissionsTCO2e, UNIT.EMISSIONS_T),
+          scope3: formatWithUnit(transportEmissions + wasteEmissions + waterEmissions, UNIT.EMISSIONS_T),
+          total: formatWithUnit(totalEmissions, UNIT.EMISSIONS_T),
       },
  
     metadata: {

@@ -27,6 +27,10 @@ export function calculateScope2Emissions(kwh: number, factorKgPerKwh = DEFAULTS.
   return { kgCO2e: Number(kgCO2e.toFixed(3)), tCO2e: Number(Number(tCO2e.toFixed(3))) }
 }
 
-export function formatEmissionValueKg(kg: number): string {
-  return `${Number(kg.toFixed(2))} ${UNIT.EMISSIONS_KG}`
+export function formatEmissionValueTCO2e(tCO2e: number): string {
+  return `${Number(tCO2e.toFixed(2))} ${UNIT.EMISSIONS_T}`
+}
+
+export function formatEmissionValueKg(tCO2e: number): string {
+  return formatEmissionValueTCO2e(tCO2e)
 }

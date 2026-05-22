@@ -23,6 +23,9 @@ export default async function SummaryPage() {
     const { getESGConfiguration } = await import("@/lib/config-engine");
     const config = await getESGConfiguration();
 
+    const formatTCO2e = (value: number) =>
+      value.toLocaleString(undefined, { maximumFractionDigits: 3 });
+
     const efElectricity = config.emissionFactors.electricity ?? config.defaultFactors.electricity;
     const efDiesel = config.emissionFactors.diesel ?? config.defaultFactors.diesel;
     const efTransport = config.emissionFactors.ambulancefuel ?? config.defaultFactors.ambulanceFuel;
@@ -125,7 +128,7 @@ export default async function SummaryPage() {
         <MetricCard label="Diesel" value={`${Math.round(data.totals.totalDiesel)} L`} />
         <MetricCard label="Water" value={`${Math.round(data.totals.totalWater)} KL`} />
         <MetricCard label="Waste" value={`${Math.round(data.totals.totalWaste)} kg`} />
-        <MetricCard label="Total CO₂" value={`${Math.round(totalEmissions)} kg`} />
+        <MetricCard label="Total CO₂" value={`${formatTCO2e(totalEmissions)} tCO2e`} />
       </div>
 
       {/* BENTO GRID CONTENT */}
@@ -183,30 +186,30 @@ export default async function SummaryPage() {
               <div className="space-y-2">
                 <EmissionRow 
                   label="Electricity" 
-                  detail={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} 
-                  value={`${data.emissions?.electricityEmissions ?? Math.round((data.totals.totalElectricity ?? 0) * efElectricity)} kgCO₂e`} 
-                  formula={`${Math.round(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh × ${efElectricity}`}
+                  detail={`${formatTCO2e(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh`} 
+                  value={`${formatTCO2e(data.emissions?.electricityEmissions ?? ((data.totals.totalElectricity ?? 0) * efElectricity / 1000))} tCO2e`} 
+                  formula={`${formatTCO2e(data.emissions?.annualizedElectricity ?? data.totals.totalElectricity)} kWh × ${efElectricity}`}
                 />
                 <EmissionRow 
                   label="Diesel" 
-                  detail={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L`} 
-                  value={`${data.emissions?.dieselEmissions ?? Math.round((data.totals.totalDiesel ?? 0) * efDiesel)} kgCO₂e`} 
-                  formula={`${Math.round(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L × ${efDiesel}`}
+                  detail={`${formatTCO2e(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L`} 
+                  value={`${formatTCO2e(data.emissions?.dieselEmissions ?? ((data.totals.totalDiesel ?? 0) * efDiesel / 1000))} tCO2e`} 
+                  formula={`${formatTCO2e(data.emissions?.annualizedDiesel ?? data.totals.totalDiesel)} L × ${efDiesel}`}
                 />
                 <EmissionRow 
                   label="Transport" 
-                  detail={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L`} 
-                  value={`${data.emissions?.transportEmissions ?? 0} kgCO₂e`} 
-                  formula={`${Math.round(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L × ${efTransport}`}
+                  detail={`${formatTCO2e(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L`} 
+                  value={`${formatTCO2e(data.emissions?.transportEmissions ?? 0)} tCO2e`} 
+                  formula={`${formatTCO2e(data.emissions?.annualizedTransportFuel ?? data.totals.totalTransportFuel)} L × ${efTransport}`}
                 />
                 <EmissionRow 
                   label="Refrigerants" 
-                  detail={`${Math.round(data.emissions?.annualizedRefrigerantEmissions ?? 0)} kg leaked`} 
-                  value={`${data.emissions?.refrigerantEmissions ?? 0} kgCO₂e`} 
+                  detail={`${formatTCO2e(data.emissions?.annualizedRefrigerantEmissions ?? 0)} kg leaked`} 
+                  value={`${formatTCO2e(data.emissions?.refrigerantEmissions ?? 0)} tCO2e`} 
                 />
                 <div className="pt-2 mt-2 border-t border-border flex justify-between items-center font-bold">
                   <span className="text-sm text-foreground">Total</span>
-                  <span className="text-sm text-emerald-600">{totalEmissions} kgCO₂e</span>
+                  <span className="text-sm text-emerald-600">{formatTCO2e(totalEmissions)} tCO2e</span>
                 </div>
               </div>
             </div>

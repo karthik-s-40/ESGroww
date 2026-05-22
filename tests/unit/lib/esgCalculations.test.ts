@@ -61,13 +61,13 @@ describe("esgCalculations", () => {
 
   describe("emissions and intensities", () => {
     test("calculates emissions and intensity helpers deterministically", () => {
-      expect(calculateScope2Emissions(1000, { emission: { electricity: 0.5 } })).toBe(500);
-      expect(calculateDieselEmissions(100, { emission: { diesel: 2.5 } })).toBe(250);
-      expect(calculateTransportEmissions(20, { emission: { ambulancefuel: 3 } })).toBe(60);
-      expect(calculateRefrigerantEmissions("R410A", 2)).toBe(4176);
+      expect(calculateScope2Emissions(1000, { emission: { electricity: 0.5 } })).toBe(0.5);
+      expect(calculateDieselEmissions(100, { emission: { diesel: 2.5 } })).toBe(0.25);
+      expect(calculateTransportEmissions(20, { emission: { ambulancefuel: 3 } })).toBe(0.06);
+      expect(calculateRefrigerantEmissions("R410A", 2)).toBe(4.176);
       expect(calculateRefrigerantEmissions("UNKNOWN", 2)).toBe(0);
-      expect(calculateWasteEmissions(100, { emission: { wastekg: 0.8 } })).toBe(80);
-      expect(calculateWaterEmissions(100, { emission: { totalwaterconsumptionkl: 0.5 } })).toBe(50);
+      expect(calculateWasteEmissions(100, { emission: { wastekg: 0.8 } })).toBe(0.08);
+      expect(calculateWaterEmissions(100, { emission: { totalwaterconsumptionkl: 0.5 } })).toBe(0.05);
       expect(calculateRenewablePercentage(40, 80)).toBe(50);
       expect(calculateRenewablePercentage(10, 0)).toBe(0);
       expect(calculateWaterRecyclingPercentage(25, 50)).toBe(50);

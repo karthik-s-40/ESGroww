@@ -1,15 +1,44 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logAdminAudit } from "@/lib/admin/audit";
-import { getESGConfiguration } from "@/lib/config-engine";
 import { revalidateTag } from "next/cache";
+import {
+  BRD_MAX_MONTHS_PER_FILE,
+  BRD_MIN_MONTHS_FOR_ANNUALIZATION,
+  BRD_MIN_MONTHS_FOR_READINESS_GATE,
+} from "@/lib/upload/brdConstants";
 
 export const dynamic = "force-dynamic";
 
+function safeRevalidateConfigTag() {
+  try {
+    revalidateTag("esg-config", "max" as any);
+  } catch {
+    // In unit tests, Next.js revalidation context is not available.
+  }
+}
+
 export async function GET() {
   try {
-    const config = await getESGConfiguration();
-    return NextResponse.json(config);
+    const [benchmarks, emissionFactors, confidenceThresholds, certificationApplicability] =
+      await Promise.all([
+        prisma.benchmarkMaster.findMany(),
+        prisma.emissionFactor.findMany(),
+        prisma.confidenceThreshold.findMany(),
+        prisma.certificationApplicability.findMany(),
+      ]);
+
+    return NextResponse.json({
+      brdConstants: {
+        BRD_MAX_MONTHS_PER_FILE,
+        BRD_MIN_MONTHS_FOR_ANNUALIZATION,
+        BRD_MIN_MONTHS_FOR_READINESS_GATE,
+      },
+      benchmarks,
+      emissionFactors,
+      confidenceThresholds,
+      certificationApplicability,
+    });
   } catch (e) {
     console.error("system-config get", e);
     return NextResponse.json({ error: "Failed to load configuration" }, { status: 500 });
@@ -19,7 +48,24 @@ export async function GET() {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { type, payload } = body;
+    const { type, payload, id, patch } = body;
+
+    if (type === "benchmark" && id && patch) {
+      const row = await prisma.benchmarkMaster.update({
+        where: { id },
+        data: patch,
+      });
+      await logAdminAudit({
+        action: "benchmark.update",
+        entityType: "BenchmarkMaster",
+        entityId: id,
+        summary: `Updated benchmark ${id}`,
+        metadata: { patch },
+      });
+
+      safeRevalidateConfigTag();
+      return NextResponse.json({ ok: true, row });
+    }
 
     if (type === "emissionFactor") {
       const { sourceType, factorValue } = payload;
@@ -58,7 +104,7 @@ export async function PATCH(req: Request) {
     }
 
     // Force Next.js cache revalidation so calculations pick up the new constants
-    revalidateTag("esg-config", "max" as any);
+    safeRevalidateConfigTag();
     
     return NextResponse.json({ ok: true });
   } catch (e) {
