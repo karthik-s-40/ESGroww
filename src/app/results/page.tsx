@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DownloadReportButton, type DownloadReportData } from "@/components/shared/DownloadReportButton";
 // ReportPdfCapture removed from import
-import { Link2, Mail, Phone } from "lucide-react";
+import { Link2, Mail, Phone, CheckCircle2 } from "lucide-react";
 import { type KPIBenchmark } from "@/lib/kpiUtils";
 import { formatWithUnit, UNIT } from "@/lib/calculations";
 
@@ -22,6 +22,7 @@ interface AssessmentData {
   categoryScores?: { energy: number; water: number; waste: number; governance: number };
   emissions?: { scope1?: number | null; scope2?: number | null; scope3?: number | null };
   formattedEmissions?: { scope1?: string; scope2?: string; scope3?: string; total?: string };
+  isLocked?: boolean;
   strengths?: string[];
   gaps?: { text: string; severity: "High" | "Medium" | "Low" }[];
   regulatoryReadiness?: { regulation: string; readiness: number; risk: "Low" | "Medium" | "Medium-High" | "High" }[];
@@ -217,6 +218,7 @@ const MOCK: AssessmentData = {
   gaps: [],
   regulatoryReadiness: [],
   roadmap: [],
+  isLocked: false,
 };
  
 // ─── Main Page ─────────────────────────────────────────────────────────────────
@@ -224,7 +226,8 @@ export default function ResultsPage() {
   const [data, setData] = useState<AssessmentData>(MOCK);
   const [loaded, setLoaded] = useState(false);
   const [consultationOpen, setConsultationOpen] = useState(false);
- 
+  const [isLocking, setIsLocking] = useState(false);
+
   useEffect(() => {
     fetch("/api/assessment", { cache: "no-store" })
       .then(r => r.json())
@@ -339,6 +342,42 @@ export default function ResultsPage() {
           </div>
         </div>
         <div data-html2canvas-ignore="true" className="flex w-full flex-wrap gap-2 items-center sm:w-auto sm:flex-nowrap">
+          {(() => {
+            const m = data.annualizedValues?.monthsUploaded;
+            const isFullyUploaded = Math.round(data.completeness) >= 100 &&
+              m &&
+              (m.electricity ?? 0) >= 12 &&
+              (m.water ?? 0) >= 12 &&
+              (m.fuel ?? 0) >= 12 &&
+              (m.waste ?? 0) >= 12 &&
+              (m.refrigerants ?? 0) >= 12 &&
+              (m.transport ?? 0) >= 12 &&
+              (m.governance ?? 0) >= 1;
+
+            return isFullyUploaded ? (
+            <Button
+              variant="default"
+              className={`min-w-[140px] flex-1 sm:flex-none ${data.isLocked ? "bg-emerald-600 hover:bg-emerald-700 cursor-default" : "bg-emerald-600 hover:bg-emerald-700"}`}
+              onClick={async () => {
+                if (data.isLocked || isLocking) return;
+                setIsLocking(true);
+                const { lockAssessmentCycle } = await import("@/actions/assessmentCycle.actions");
+                const res = await lockAssessmentCycle();
+                if (res.success) {
+                  setData(prev => ({ ...prev, isLocked: true }));
+                }
+                setIsLocking(false);
+              }}
+              disabled={data.isLocked || isLocking || !loaded}
+            >
+              {data.isLocked ? (
+                <><CheckCircle2 className="mr-2 h-4 w-4" /> Completed</>
+              ) : (
+                isLocking ? "Locking..." : "Mark as Complete"
+              )}
+            </Button>
+            ) : null;
+          })()}
           <DownloadReportButton
             data={downloadReportData}
             captureRootId="pdf-report-capture"
@@ -519,12 +558,12 @@ export default function ResultsPage() {
         </div>
  
         {/* ── Row 2 Col 2: Strengths + Gaps ── */}
-        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-hidden min-w-0`} style={glassCardStyle}>
+        <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col min-w-0 overflow-hidden`} style={glassCardStyle}>
           <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0">
             {/* Strengths */}
-            <div className="flex-1 overflow-visible flex flex-col">
+            <div className="flex-1 overflow-hidden flex flex-col">
               <p className="m-0 mb-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">✓ Strengths</p>
-              <div className="flex-1 overflow-visible flex flex-col gap-1.5">
+              <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1.5 custom-scrollbar">
                 {(data.strengths ?? []).slice(0, 4).map((s, i) => (
                   <div key={i} className="bg-emerald-50/50 rounded-lg p-2 border border-emerald-150">
                     <p className="m-0 text-xs text-emerald-900 leading-normal">{s}</p>
@@ -535,7 +574,7 @@ export default function ResultsPage() {
             {/* Gaps */}
             <div className="flex-1 overflow-hidden flex flex-col">
               <p className="m-0 mb-2 text-xs font-bold text-red-600 uppercase tracking-wider">⚠ Critical Gaps</p>
-              <div className="flex-1 overflow-hidden flex flex-col gap-1.5">
+              <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1.5 custom-scrollbar">
                 {(data.gaps ?? []).slice(0, 4).map((g, i) => (
                   <div key={i} className="rounded-lg p-2 border flex gap-1.5 items-start" style={{ background: `${sevColor[g.severity]}0a`, borderColor: `${sevColor[g.severity]}30` }}>
                     <span className="text-[9px] font-bold text-white rounded px-1.5 py-0.5 shrink-0 mt-0.5" style={{ background: sevColor[g.severity] }}>{g.severity}</span>
@@ -550,7 +589,7 @@ export default function ResultsPage() {
         {/* ── Row 2 Col 3: Regulatory Readiness ── */}
         <div className={`${glassCardClass} rounded-2xl p-4 sm:p-4.5 flex flex-col overflow-hidden min-w-0`} style={glassCardStyle}>
           <p className="m-0 mb-2.5 text-xs font-bold text-slate-900 uppercase tracking-wider">Regulatory Readiness</p>
-          <div className="flex-1 flex flex-col gap-2">
+          <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-2 custom-scrollbar">
             {(data.regulatoryReadiness ?? []).map((reg, i) => (
               <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                 <div className="basis-full min-w-0 sm:basis-[120px] sm:flex-[0_0_120px] text-xs font-semibold text-slate-700 break-words sm:truncate">{reg.regulation}</div>

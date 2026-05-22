@@ -43,6 +43,9 @@ export async function getSummaryData(assessmentCycleId?: string) {
 
     const hospital = await prisma.hospital.findFirst({
     select: {
+    hospitalName: true,
+    industry: true,
+    numberOfBeds: true,
     builtUpArea: true,
     electricityData: dataCondition ? { ...dataCondition, select: { electricityKwh: true, renewableKwh: true, month: true, year: true } } : { select: { electricityKwh: true, renewableKwh: true, month: true, year: true } },
     waterData: dataCondition ? { ...dataCondition, select: { totalWaterConsumptionKl: true, recycledWaterKl: true, month: true, year: true } } : { select: { totalWaterConsumptionKl: true, recycledWaterKl: true, month: true, year: true } },

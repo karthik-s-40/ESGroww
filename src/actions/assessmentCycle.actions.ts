@@ -59,3 +59,18 @@ export async function setActiveAssessmentCycle(cycleId: string) {
   revalidatePath("/");
   return { success: true };
 }
+
+export async function lockAssessmentCycle() {
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get("activeAssessmentCycleId")?.value;
+  if (!activeId) return { success: false, error: "No active assessment cycle" };
+
+  await prisma.assessmentCycle.update({
+    where: { id: activeId },
+    data: { isLocked: true },
+  });
+
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath("/");
+  return { success: true };
+}

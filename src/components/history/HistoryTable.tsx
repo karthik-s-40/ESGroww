@@ -57,8 +57,8 @@ export function HistoryTable({ cycles, activeId }: Props) {
                   </td>
                   <td className="px-6 py-4">
                     {cycle.isLocked ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">
-                        Locked
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        <CheckCircle2 className="h-3 w-3" /> Completed
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">

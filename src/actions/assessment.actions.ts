@@ -87,6 +87,15 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
     if (!hospital) {
       throw new AppError(ERROR_MESSAGES.HOSPITAL_NOT_FOUND, 404, "HOSPITAL_NOT_FOUND");
     }
+    
+    let isLocked = false;
+    if (assessmentCycleId) {
+      const cycle = await prisma.assessmentCycle.findUnique({
+        where: { id: assessmentCycleId },
+        select: { isLocked: true }
+      });
+      if (cycle) isLocked = cycle.isLocked;
+    }
  
     const config = await getESGConfiguration();
  
@@ -329,7 +338,7 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
     );
   const scope2EmissionsTCO2e =
     typeof scope2Emissions === "object" && scope2Emissions !== null
-      ? scope2Emissions.tCO2e
+      ? (scope2Emissions as any).tCO2e
       : scope2Emissions;
 
   const annualizedTransportFuel =
@@ -905,6 +914,8 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
   // ─────────────────────────────────────────────
  
     return {
+    isLocked,
+    
     overallScore,
  
     readinessStage,

@@ -1,4 +1,6 @@
-import { Info } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 
 import { PageWrapper } from "@/components/layout/page-wrapper";
 import { SectionCard } from "@/components/layout/section-card";
@@ -6,7 +8,15 @@ import UploadWorkspace from "@/components/upload/UploadWorkspace";
 import { BRD_MIN_MONTHS_FOR_READINESS_GATE } from "@/lib/upload/brdConstants";
 import { NewAssessmentButton } from "@/components/dashboard/NewAssessmentButton";
 
-export default function UploadPage() {
+export default async function UploadPage() {
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get("activeAssessmentCycleId")?.value;
+  let isLocked = false;
+  if (activeId) {
+    const cycle = await prisma.assessmentCycle.findUnique({ where: { id: activeId }, select: { isLocked: true } });
+    if (cycle?.isLocked) isLocked = true;
+  }
+
   return (
     <div className="flex w-full min-w-0 flex-col bg-background text-foreground">
       <PageWrapper maxWidth="full" dense className="pb-14">
@@ -31,7 +41,16 @@ export default function UploadPage() {
           </div>
         </SectionCard>
 
-        <UploadWorkspace />
+        {isLocked ? (
+          <SectionCard size="sm" className="mt-4 shrink-0 border-l-[3px] border-l-red-500 bg-red-50 shadow-none">
+            <div className="flex items-center gap-2 text-sm leading-snug text-red-800 font-medium">
+              <AlertTriangle className="size-4 shrink-0 text-red-600" />
+              <p>Already marked as complete, cannot edit.</p>
+            </div>
+          </SectionCard>
+        ) : (
+          <UploadWorkspace />
+        )}
       </PageWrapper>
     </div>
   );
