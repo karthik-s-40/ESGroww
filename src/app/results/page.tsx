@@ -5,6 +5,7 @@ import { DownloadReportButton } from "@/components/shared/DownloadReportButton";
 // ReportPdfCapture removed from import
 import { Link2, Mail, Phone } from "lucide-react";
 import { type KPIBenchmark } from "@/lib/kpiUtils";
+import { formatWithUnit, UNIT } from "@/lib/calculations";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AssessmentData {
@@ -291,7 +292,7 @@ export default function ResultsPage() {
                 Consultation Request
               </p>
               <h2 className="m-0 mt-2 text-lg font-bold text-slate-900">
-                Book your ESG consultation with SAM Corporate
+                Book your ESG consultation with ESGroww
               </h2>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setConsultationOpen(false)}>
@@ -358,8 +359,8 @@ export default function ResultsPage() {
             ))}
             <div className="bg-slate-50 rounded-xl p-2.5 mt-2.5 border border-border">
               <p className="m-0 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Total Emissions</p>
-              <p className="m-0 mt-0.5 text-lg font-black text-slate-900">{data.totalEmissions.toFixed(1)}</p>
-              <p className="m-0 text-[10px] text-muted-foreground font-medium">tCO₂e / year</p>
+              <p className="m-0 mt-0.5 text-lg font-black text-slate-900">{data.formattedEmissions?.total ?? formatWithUnit(data.totalEmissions, UNIT.EMISSIONS_KG)}</p>
+              <p className="m-0 text-[10px] text-muted-foreground font-medium">per year</p>
             </div>
           </div>
         </div>
@@ -382,7 +383,7 @@ export default function ResultsPage() {
             })}
           </div>
           <p className="m-0 mt-3 text-[10px] text-muted-foreground italic">
-            SAM Assessment provides indicative readiness scores only — not a certification guarantee.
+            ESGroww  Assessment provides indicative readiness scores only — not a certification guarantee.
           </p>
         </div>
  
@@ -416,8 +417,8 @@ export default function ResultsPage() {
               ].map(s => (
                 <div key={s.label} className="flex-1 rounded-xl p-2 text-center border" style={{ background: `${s.color}10`, borderColor: `${s.color}30` }}>
                   <p className="m-0 text-[10px] font-bold" style={{ color: s.color }}>{s.label}</p>
-                  <p className="m-0 mt-0.5 text-base font-black" style={{ color: s.color }}>{s.val.toFixed(1)}</p>
-                  <p className="m-0 text-[9px] text-muted-foreground">tCO₂e</p>
+                  <p className="m-0 mt-0.5 text-base font-black" style={{ color: s.color }}>{data.formattedEmissions?.[s.label.toLowerCase().replace(/\s+/g, '') as "scope1" | "scope2" | "scope3"] ?? formatWithUnit(s.val, UNIT.EMISSIONS_KG)}</p>
+                  <p className="m-0 text-[9px] text-muted-foreground">per year</p>
                 </div>
               ))}
             </div>
@@ -429,15 +430,15 @@ export default function ResultsPage() {
           <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Annualized Metrics</p>
           <div className="grid grid-cols-2 gap-2 flex-1">
             {[
-              { label: "Electricity", val: Math.round(data.annualizedValues.electricity).toLocaleString(), unit: "kWh", icon: "⚡", color: "#f59e0b" },
-              { label: "Water", val: Math.round(data.annualizedValues.water).toLocaleString(), unit: "KL", icon: "💧", color: "#3b82f6" },
-              { label: "Fuel / DG", val: Math.round(data.annualizedValues.fuel).toLocaleString(), unit: "Litres", icon: "🛢", color: "#ef4444" },
-              { label: "Waste", val: Math.round(data.annualizedValues.waste).toLocaleString(), unit: "kg", icon: "♻️", color: "#22c55e" },
+              { label: "Electricity", value: data.annualizedValues.electricity ?? 0, formatted: data.formattedAnnualizedValues?.electricity, unit: UNIT.ELECTRICITY, icon: "⚡", color: "#f59e0b" },
+              { label: "Water", value: data.annualizedValues.water ?? 0, formatted: data.formattedAnnualizedValues?.water, unit: UNIT.WATER, icon: "💧", color: "#3b82f6" },
+              { label: "Fuel / DG", value: data.annualizedValues.fuel ?? 0, formatted: data.formattedAnnualizedValues?.fuel, unit: UNIT.DIESEL, icon: "🛢", color: "#ef4444" },
+              { label: "Waste", value: data.annualizedValues.waste ?? 0, formatted: data.formattedAnnualizedValues?.waste, unit: UNIT.WASTE, icon: "♻️", color: "#22c55e" },
             ].map(m => (
               <div key={m.label} className="rounded-xl p-2.5 flex flex-col justify-between border" style={{ background: `${m.color}0a`, borderColor: `${m.color}25` }}>
                 <p className="m-0 text-[10px] text-muted-foreground font-bold">{m.icon} {m.label}</p>
-                <p className="m-0 mt-1 text-base font-black text-slate-900 leading-none">{m.val}</p>
-                <p className="m-0 mt-1 text-[9px] font-bold" style={{ color: m.color }}>Est. annual {m.unit}</p>
+                <p className="m-0 mt-1 text-base font-black text-slate-900 leading-none">{m.formatted ?? formatWithUnit(m.value, m.unit)}</p>
+                <p className="m-0 mt-1 text-[9px] font-bold" style={{ color: m.color }}>Est. annual</p>
               </div>
             ))}
           </div>

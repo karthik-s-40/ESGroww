@@ -27,6 +27,7 @@ import {
   calculateConfidenceLabel,
   calculateConfidenceScore,
 } from "@/lib/esgCalculations";
+import { convertToStandardUnit, UNIT, normalizeUnit } from "@/lib/calculations/units";
 
 const VALID_MONTHS = [
   "Jan",
@@ -100,12 +101,50 @@ function normalizeMonth(value: unknown) {
   return monthMap[normalized] ?? raw;
 }
 
-function parseNumericField(value: unknown, fallback = 0) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return fallback;
-  const numeric = Number(raw.replace(/,/g, ""));
+function parseNumericField(value: unknown, fallback = 0, fieldName?: string) {
+  const rawInput = String(value ?? "").trim();
+  if (!rawInput) return fallback;
+  // Try to extract numeric and optional unit e.g. "1.5 MWh" or "1,500 kWh"
+  const match = rawInput.match(/^([0-9,\.]+)\s*([a-zA-Z%₂₃\-]+)?$/);
+  let numericPart: string | null = null;
+  let unitPart: string | null = null;
+  if (match) {
+    numericPart = match[1];
+    unitPart = match[2] ?? null;
+  } else {
+    // fallback: remove commas and try parse
+    const cleaned = rawInput.replace(/,/g, "");
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  const numeric = Number(numericPart.replace(/,/g, ""));
   if (!Number.isFinite(numeric)) return fallback;
-  return numeric;
+
+  // If no unit detected, return parsed numeric
+  if (!unitPart || !fieldName) return numeric;
+
+  // Map fieldName to expected target unit
+  const lowerField = fieldName.toLowerCase();
+  let targetUnit = '';
+  if (lowerField.includes('electricity') || lowerField.includes('kwh') || lowerField.includes('renewable')) targetUnit = UNIT.ELECTRICITY;
+  else if (lowerField.includes('water')) targetUnit = UNIT.WATER;
+  else if (lowerField.includes('diesel') || lowerField.includes('litre')) targetUnit = UNIT.DIESEL;
+  else if (lowerField.includes('png') || lowerField.includes('cng') || lowerField.includes('kg')) targetUnit = 'kg';
+  else if (lowerField.includes('waste')) targetUnit = 'kg';
+  else if (lowerField.includes('refrigerant')) targetUnit = 'kg';
+  else targetUnit = '';
+
+  if (!targetUnit) return numeric;
+
+  try {
+    const from = normalizeUnit(unitPart);
+    const converted = convertToStandardUnit(numeric, from, targetUnit.toLowerCase());
+    return Number.isFinite(converted) ? converted : numeric;
+  } catch (e) {
+    // If conversion fails, return raw numeric and let validation catch unit mismatch if needed
+    return numeric;
+  }
 }
 
 function validateNumericFields(rows: Record<string, unknown>[], fields: string[], category: string) {
@@ -515,60 +554,60 @@ function rowToCanonical(
     case "Electricity":
       return {
         ...base,
-        electricityCost: parseNumericField(row.electricityCost),
-        electricityKwh: parseNumericField(row.electricityKwh),
-        meterReading: parseNumericField(row.meterReading),
-        peakDemand: parseNumericField(row.peakDemand),
-        powerFactor: parseNumericField(row.powerFactor),
-        renewableKwh: parseNumericField(row.renewableKwh),
+        electricityCost: parseNumericField(row.electricityCost, 0, 'electricityCost'),
+        electricityKwh: parseNumericField(row.electricityKwh, 0, 'electricityKwh'),
+        meterReading: parseNumericField(row.meterReading, 0, 'meterReading'),
+        peakDemand: parseNumericField(row.peakDemand, 0, 'peakDemand'),
+        powerFactor: parseNumericField(row.powerFactor, 0, 'powerFactor'),
+        renewableKwh: parseNumericField(row.renewableKwh, 0, 'renewableKwh'),
       };
     case "Water":
       return {
         ...base,
-        municipalWaterKl: parseNumericField(row.municipalWaterKl),
-        tankerWaterKl: parseNumericField(row.tankerWaterKl),
-        borewellWaterKl: parseNumericField(row.borewellWaterKl),
-        rainwaterHarvestedKl: parseNumericField(row.rainwaterHarvestedKl),
-        recycledWaterKl: parseNumericField(row.recycledWaterKl),
-        totalWaterConsumptionKl: parseNumericField(row.totalWaterConsumptionKl),
-        waterCost: parseNumericField(row.waterCost),
+        municipalWaterKl: parseNumericField(row.municipalWaterKl, 0, 'municipalWaterKl'),
+        tankerWaterKl: parseNumericField(row.tankerWaterKl, 0, 'tankerWaterKl'),
+        borewellWaterKl: parseNumericField(row.borewellWaterKl, 0, 'borewellWaterKl'),
+        rainwaterHarvestedKl: parseNumericField(row.rainwaterHarvestedKl, 0, 'rainwaterHarvestedKl'),
+        recycledWaterKl: parseNumericField(row.recycledWaterKl, 0, 'recycledWaterKl'),
+        totalWaterConsumptionKl: parseNumericField(row.totalWaterConsumptionKl, 0, 'totalWaterConsumptionKl'),
+        waterCost: parseNumericField(row.waterCost, 0, 'waterCost'),
       };
     case "Fuel":
       return {
         ...base,
-        dgDieselLitres: parseNumericField(row.dgDieselLitres),
-        dgRuntimeHours: parseNumericField(row.dgRuntimeHours),
-        dieselCost: parseNumericField(row.dieselCost),
-        pngCngQuantity: parseNumericField(row.pngCngQuantity),
+        dgDieselLitres: parseNumericField(row.dgDieselLitres, 0, 'dgDieselLitres'),
+        dgRuntimeHours: parseNumericField(row.dgRuntimeHours, 0, 'dgRuntimeHours'),
+        dieselCost: parseNumericField(row.dieselCost, 0, 'dieselCost'),
+        pngCngQuantity: parseNumericField(row.pngCngQuantity, 0, 'pngCngQuantity'),
       };
     case "Waste":
       return {
         ...base,
-        wetWasteKg: parseNumericField(row.wetWasteKg),
-        dryWasteKg: parseNumericField(row.dryWasteKg),
-        hazardousWasteKg: parseNumericField(row.hazardousWasteKg),
-        biomedicalWasteKg: parseNumericField(row.biomedicalWasteKg),
-        eWasteKg: parseNumericField(row.eWasteKg),
-        constructionWasteKg: parseNumericField(row.constructionWasteKg),
-        recyclableWasteKg: parseNumericField(row.recyclableWasteKg),
-        landfillWasteKg: parseNumericField(row.landfillWasteKg),
-        authorizedVendorDisposalKg: parseNumericField(row.authorizedVendorDisposalKg),
+        wetWasteKg: parseNumericField(row.wetWasteKg, 0, 'wetWasteKg'),
+        dryWasteKg: parseNumericField(row.dryWasteKg, 0, 'dryWasteKg'),
+        hazardousWasteKg: parseNumericField(row.hazardousWasteKg, 0, 'hazardousWasteKg'),
+        biomedicalWasteKg: parseNumericField(row.biomedicalWasteKg, 0, 'biomedicalWasteKg'),
+        eWasteKg: parseNumericField(row.eWasteKg, 0, 'eWasteKg'),
+        constructionWasteKg: parseNumericField(row.constructionWasteKg, 0, 'constructionWasteKg'),
+        recyclableWasteKg: parseNumericField(row.recyclableWasteKg, 0, 'recyclableWasteKg'),
+        landfillWasteKg: parseNumericField(row.landfillWasteKg, 0, 'landfillWasteKg'),
+        authorizedVendorDisposalKg: parseNumericField(row.authorizedVendorDisposalKg, 0, 'authorizedVendorDisposalKg'),
       };
     case "Refrigerants":
       return {
         ...base,
         refrigerantType: String(row.refrigerantType ?? "").trim(),
-        refrigerantLeakKg: parseNumericField(row.refrigerantLeakKg),
+        refrigerantLeakKg: parseNumericField(row.refrigerantLeakKg, 0, 'refrigerantLeakKg'),
       };
     case "Transport":
       return {
         ...base,
-        ambulanceFuelLitres: parseNumericField(row.ambulanceFuelLitres),
-        staffCommuteKm: parseNumericField(row.staffCommuteKm),
-        fleetFuelConsumption: parseNumericField(row.fleetFuelConsumption),
-        vehicleKilometers: parseNumericField(row.vehicleKilometers),
-        cargoTonnage: parseNumericField(row.cargoTonnage),
-        tonneKilometers: parseNumericField(row.tonneKilometers),
+        ambulanceFuelLitres: parseNumericField(row.ambulanceFuelLitres, 0, 'ambulanceFuelLitres'),
+        staffCommuteKm: parseNumericField(row.staffCommuteKm, 0, 'staffCommuteKm'),
+        fleetFuelConsumption: parseNumericField(row.fleetFuelConsumption, 0, 'fleetFuelConsumption'),
+        vehicleKilometers: parseNumericField(row.vehicleKilometers, 0, 'vehicleKilometers'),
+        cargoTonnage: parseNumericField(row.cargoTonnage, 0, 'cargoTonnage'),
+        tonneKilometers: parseNumericField(row.tonneKilometers, 0, 'tonneKilometers'),
       };
     default:
       return base;

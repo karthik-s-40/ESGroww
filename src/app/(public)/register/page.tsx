@@ -299,7 +299,7 @@ export default function RegisterPage() {
           </ul>
 
           <p className="border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">
-            SAM Assessment Application provides indicative sustainability and
+            ESGroww  Assessment Application provides indicative sustainability and
             certification readiness intelligence. This platform does not replace
             official certification audits, regulatory reviews, accredited
             assessments, or legal compliance advice.

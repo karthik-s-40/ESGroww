@@ -15,6 +15,28 @@ export interface DownloadReportData {
   confidence: number;
   totalEmissions: number;
   annualizedValues: { electricity: number; water: number; fuel: number; waste: number };
+  // Optional formatted display fields (preferred for PDFs/UI if present)
+  formattedTotals?: {
+    electricity?: string;
+    renewable?: string;
+    water?: string;
+    recycledWater?: string;
+    fuel?: string;
+    waste?: string;
+    recyclableWaste?: string;
+  };
+  formattedAnnualizedValues?: {
+    electricity?: string;
+    water?: string;
+    fuel?: string;
+    waste?: string;
+  };
+  formattedEmissions?: {
+    scope1?: string;
+    scope2?: string;
+    scope3?: string;
+    total?: string;
+  };
   certificationReadiness?: { name: string; score: number; status: string }[];
   categoryScores?: { energy: number; water: number; waste: number; governance: number };
   emissions?: { scope1: number; scope2: number; scope3: number };

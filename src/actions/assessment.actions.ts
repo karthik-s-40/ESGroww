@@ -34,6 +34,7 @@ import {
   identifyStrengthsAndGaps,
   generatePriorityRoadmap,
 } from "@/lib/esgCalculations";
+import { formatWithUnit, UNIT } from "@/lib/calculations";
 import {
   evaluateEnergyIntensity,
   evaluateWaterIntensity,
@@ -913,6 +914,12 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       waste: annualizedWaste,
  
       monthsUploaded: {
+    formattedAnnualizedValues: {
+      electricity: formatWithUnit(annualizedElectricity, UNIT.ELECTRICITY),
+      water: formatWithUnit(annualizedWater, UNIT.WATER),
+      fuel: formatWithUnit(annualizedFuel, UNIT.DIESEL),
+      waste: formatWithUnit(annualizedWaste, UNIT.WASTE),
+    },
         electricity: electricityMonths,
         water: waterMonths,
         fuel: fuelMonths,
@@ -974,6 +981,12 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
         wasteEmissions +
         waterEmissions,
     },
+      formattedEmissions: {
+        scope1: formatWithUnit(dieselEmissions + refrigerantEmissions, UNIT.EMISSIONS_KG),
+        scope2: formatWithUnit(scope2Emissions, UNIT.EMISSIONS_KG),
+        scope3: formatWithUnit(transportEmissions + wasteEmissions + waterEmissions, UNIT.EMISSIONS_KG),
+        total: formatWithUnit(totalEmissions, UNIT.EMISSIONS_KG),
+      },
  
     metadata: {
       minimumRequiredMonths: BRD_MIN_MONTHS_FOR_ANNUALIZATION,
@@ -1076,6 +1089,15 @@ export async function computeAndSaveAssessment(assessmentCycleId?: string) {
       waste:
         totalWaste,
       recyclableWaste,
+    },
+    formattedTotals: {
+      electricity: formatWithUnit(totalElectricity, UNIT.ELECTRICITY),
+      renewable: formatWithUnit(totalRenewable, UNIT.ELECTRICITY),
+      water: formatWithUnit(totalWaterConsumptionKl, UNIT.WATER),
+      recycledWater: formatWithUnit(totalRecycledWater, UNIT.WATER),
+      fuel: formatWithUnit(totalFuel, UNIT.DIESEL),
+      waste: formatWithUnit(totalWaste, UNIT.WASTE),
+      recyclableWaste: formatWithUnit(recyclableWaste, UNIT.WASTE),
     },
     };
   } catch (error) {
