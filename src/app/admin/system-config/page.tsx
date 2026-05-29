@@ -65,9 +65,17 @@ export default function SystemConfigPage() {
   }
 
   // Helpers to get current value or fallback
-  const getEf = (key: keyof typeof data.defaultFactors) => {
-    if (key === "refrigerants") return 0;
-    return data.emissionFactors[key.toLowerCase()] ?? data.defaultFactors[key];
+  type DefaultFactorKey = Exclude<keyof ESGConfiguration["defaultFactors"], "refrigerants">;
+  const emissionFactorMap: Record<DefaultFactorKey, string> = {
+    electricity: "electricity",
+    diesel: "diesel",
+    ambulanceFuel: "ambulancefuel",
+    wasteKg: "wastekg",
+    totalWaterConsumptionKl: "totalwaterconsumptionkl",
+  };
+
+  const getEf = (key: DefaultFactorKey): number => {
+    return data.emissionFactors[emissionFactorMap[key]] ?? data.defaultFactors[key];
   };
 
   const getB = (metricName: string, fallback: number) => {
