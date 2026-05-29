@@ -8,6 +8,16 @@ import { type KPIBenchmark } from "@/lib/kpiUtils";
 import { formatWithUnit, UNIT } from "@/lib/calculations";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+type AnnualizedMonthsUploaded = {
+  electricity?: number;
+  water?: number;
+  fuel?: number;
+  waste?: number;
+  refrigerants?: number;
+  transport?: number;
+  governance?: number;
+};
+
 interface AssessmentData {
   orgName?: string;
   sector?: string;
@@ -16,7 +26,13 @@ interface AssessmentData {
   completeness: number;
   confidence: number;
   totalEmissions: number;
-  annualizedValues: { electricity: number; water: number; fuel: number; waste: number };
+  annualizedValues: {
+    electricity: number;
+    water: number;
+    fuel: number;
+    waste: number;
+    monthsUploaded?: AnnualizedMonthsUploaded;
+  };
   formattedAnnualizedValues?: { electricity?: string; water?: string; fuel?: string; waste?: string };
   certificationReadiness?: { name: string; score: number; status: string }[];
   categoryScores?: { energy: number; water: number; waste: number; governance: number };
@@ -267,20 +283,6 @@ export default function ResultsPage() {
     { label: "Data", value: Math.round(data.confidence * 100) },
   ];
  
-  const timelineGroups: Record<string, typeof MOCK.roadmap> = {};
-  (data.roadmap ?? []).forEach(r => {
-    if (!timelineGroups[r.timeline]) timelineGroups[r.timeline] = [];
-    timelineGroups[r.timeline]!.push(r);
-  });
-
-  // ── KPI derivations from existing data ──
-  const annEl   = data.annualizedValues.electricity ?? 0;
-  const annWa   = data.annualizedValues.water       ?? 0;
-  const sqft    = data.builtUpArea ?? data.orgBuiltUpArea ?? 0;
-  const renPct  = data.percentages?.renewableEnergy  ?? 0;
-  const wRePct  = data.percentages?.waterRecycling   ?? 0;
-  const wsePct  = data.percentages?.wasteRecycling   ?? 0;
-
   const evalKpis = data.evaluatedKpis || {
     energyIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },
     waterIntensity: { value: null, status: "Insufficient Data", range: "N/A", threshold: "N/A", scoreImpact: "Zero" },

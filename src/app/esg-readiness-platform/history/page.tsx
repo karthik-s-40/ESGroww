@@ -2,6 +2,8 @@ import { getAssessmentCycles } from "@/actions/assessmentCycle.actions";
 import { PageWrapper } from "@/components/layout/page-wrapper";
 import { HistoryTable } from "@/components/history/HistoryTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function HistoryPage() {
   const { cycles, activeId } = await getAssessmentCycles();
 
