@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logAdminAudit } from "@/lib/admin/audit";
+import { getESGConfiguration } from "@/lib/config-engine";
 import { revalidateTag } from "next/cache";
 import {
   BRD_MAX_MONTHS_PER_FILE,
@@ -20,24 +21,15 @@ function safeRevalidateConfigTag() {
 
 export async function GET() {
   try {
-    const [benchmarks, emissionFactors, confidenceThresholds, certificationApplicability] =
-      await Promise.all([
-        prisma.benchmarkMaster.findMany(),
-        prisma.emissionFactor.findMany(),
-        prisma.confidenceThreshold.findMany(),
-        prisma.certificationApplicability.findMany(),
-      ]);
+    const config = await getESGConfiguration();
 
     return NextResponse.json({
+      ...config,
       brdConstants: {
         BRD_MAX_MONTHS_PER_FILE,
         BRD_MIN_MONTHS_FOR_ANNUALIZATION,
         BRD_MIN_MONTHS_FOR_READINESS_GATE,
       },
-      benchmarks,
-      emissionFactors,
-      confidenceThresholds,
-      certificationApplicability,
     });
   } catch (e) {
     console.error("system-config get", e);

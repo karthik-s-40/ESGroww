@@ -261,8 +261,15 @@ export default function ResultsPage() {
  
   const catScores = data.categoryScores ?? { energy: 0, water: 0, waste: 0, governance: 0 };
   const emis = data.emissions ?? { scope1: 0, scope2: 0, scope3: 0 };
+  const annualizedValues = data.annualizedValues ?? {
+    electricity: 0,
+    water: 0,
+    fuel: 0,
+    waste: 0,
+  };
   const downloadReportData: DownloadReportData = {
     ...data,
+    annualizedValues,
     emissions: {
       scope1: toFiniteNumber(emis.scope1),
       scope2: toFiniteNumber(emis.scope2),
@@ -345,7 +352,7 @@ export default function ResultsPage() {
         </div>
         <div data-html2canvas-ignore="true" className="flex w-full flex-wrap gap-2 items-center sm:w-auto sm:flex-nowrap">
           {(() => {
-            const m = data.annualizedValues?.monthsUploaded;
+            const m = annualizedValues.monthsUploaded;
             const isFullyUploaded = Math.round(data.completeness) >= 100 &&
               m &&
               (m.electricity ?? 0) >= 12 &&
@@ -542,10 +549,10 @@ export default function ResultsPage() {
           <p className="m-0 mb-3 text-xs font-bold text-slate-900 uppercase tracking-wider">Annualized Metrics</p>
           <div className="grid grid-cols-2 gap-2 flex-1">
             {[
-              { label: "Electricity", value: data.annualizedValues.electricity ?? 0, formatted: data.formattedAnnualizedValues?.electricity, unit: UNIT.ELECTRICITY, icon: "⚡", color: "#f59e0b" },
-              { label: "Water", value: data.annualizedValues.water ?? 0, formatted: data.formattedAnnualizedValues?.water, unit: UNIT.WATER, icon: "💧", color: "#3b82f6" },
-              { label: "Fuel / DG", value: data.annualizedValues.fuel ?? 0, formatted: data.formattedAnnualizedValues?.fuel, unit: UNIT.DIESEL, icon: "🛢", color: "#ef4444" },
-              { label: "Waste", value: data.annualizedValues.waste ?? 0, formatted: data.formattedAnnualizedValues?.waste, unit: UNIT.WASTE, icon: "♻️", color: "#22c55e" },
+              { label: "Electricity", value: annualizedValues.electricity ?? 0, formatted: data.formattedAnnualizedValues?.electricity, unit: UNIT.ELECTRICITY, icon: "⚡", color: "#f59e0b" },
+              { label: "Water", value: annualizedValues.water ?? 0, formatted: data.formattedAnnualizedValues?.water, unit: UNIT.WATER, icon: "💧", color: "#3b82f6" },
+              { label: "Fuel / DG", value: annualizedValues.fuel ?? 0, formatted: data.formattedAnnualizedValues?.fuel, unit: UNIT.DIESEL, icon: "🛢", color: "#ef4444" },
+              { label: "Waste", value: annualizedValues.waste ?? 0, formatted: data.formattedAnnualizedValues?.waste, unit: UNIT.WASTE, icon: "♻️", color: "#22c55e" },
             ].map(m => (
               <div key={m.label} className="rounded-xl p-2.5 flex flex-col justify-between border" style={{ background: `${m.color}0a`, borderColor: `${m.color}25` }}>
                 <p className="m-0 text-[10px] text-muted-foreground font-bold">{m.icon} {m.label}</p>

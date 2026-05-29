@@ -126,6 +126,12 @@ const getLabelPoints = (scores: { label: string; value: number }[]) => {
 
 export const VectorReportTemplate = ({ data }: { data: DownloadReportData }) => {
   const generatedDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const annualizedValues = data.annualizedValues ?? {
+    electricity: 0,
+    water: 0,
+    fuel: 0,
+    waste: 0,
+  };
   
   const radarScores = [
     { label: "Data", value: data.completeness },
@@ -248,22 +254,22 @@ export const VectorReportTemplate = ({ data }: { data: DownloadReportData }) => 
           <View style={styles.grid}>
             <View style={[styles.card, styles.col4]}>
               <Text style={styles.cardTitle}>Electricity</Text>
-              <Text style={styles.cardValue}>{Math.round(data.annualizedValues.electricity).toLocaleString()}</Text>
+              <Text style={styles.cardValue}>{Math.round(annualizedValues.electricity).toLocaleString()}</Text>
               <Text style={styles.cardUnit}>kWh/yr</Text>
             </View>
             <View style={[styles.card, styles.col4]}>
               <Text style={styles.cardTitle}>Water</Text>
-              <Text style={styles.cardValue}>{Math.round(data.annualizedValues.water).toLocaleString()}</Text>
+              <Text style={styles.cardValue}>{Math.round(annualizedValues.water).toLocaleString()}</Text>
               <Text style={styles.cardUnit}>KL/yr</Text>
             </View>
             <View style={[styles.card, styles.col4]}>
               <Text style={styles.cardTitle}>Fuel (DG)</Text>
-              <Text style={styles.cardValue}>{Math.round(data.annualizedValues.fuel).toLocaleString()}</Text>
+              <Text style={styles.cardValue}>{Math.round(annualizedValues.fuel).toLocaleString()}</Text>
               <Text style={styles.cardUnit}>L/yr</Text>
             </View>
             <View style={[styles.card, styles.col4]}>
               <Text style={styles.cardTitle}>Waste</Text>
-              <Text style={styles.cardValue}>{Math.round(data.annualizedValues.waste).toLocaleString()}</Text>
+              <Text style={styles.cardValue}>{Math.round(annualizedValues.waste).toLocaleString()}</Text>
               <Text style={styles.cardUnit}>kg/yr</Text>
             </View>
           </View>

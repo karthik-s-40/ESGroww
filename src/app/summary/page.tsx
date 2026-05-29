@@ -26,9 +26,19 @@ export default async function SummaryPage() {
     const formatTCO2e = (value: number) =>
       value.toLocaleString(undefined, { maximumFractionDigits: 3 });
 
-    const efElectricity = config.emissionFactors.electricity ?? config.defaultFactors.electricity;
-    const efDiesel = config.emissionFactors.diesel ?? config.defaultFactors.diesel;
-    const efTransport = config.emissionFactors.ambulancefuel ?? config.defaultFactors.ambulanceFuel;
+    const emissionFactors = config?.emissionFactors ?? {};
+    const defaultFactors = config?.defaultFactors ?? {
+      electricity: 0.72,
+      diesel: 2.68,
+      ambulanceFuel: 2.68,
+      wasteKg: 0.8,
+      totalWaterConsumptionKl: 0.5,
+      refrigerants: {},
+    };
+
+    const efElectricity = emissionFactors.electricity ?? defaultFactors.electricity;
+    const efDiesel = emissionFactors.diesel ?? defaultFactors.diesel;
+    const efTransport = emissionFactors.ambulancefuel ?? defaultFactors.ambulanceFuel;
 
   const environmentalScore = data.scores.environmentalScore;
   const socialScore        = data.scores.socialScore;
